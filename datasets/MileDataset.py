@@ -1,17 +1,17 @@
 import glob
 import os
-
+import random
 import re
 
-from Dataset import Dataset
-from MileDatasetSampleParser import MileDatasetSampleParser
-
 import pandas as pd
+
+from datasets.Dataset import Dataset
+from datasets.MileDatasetSampleParser import MileDatasetSampleParser
 
 
 class MileDataset(Dataset):
     def __init__(self, full_dataset=False):
-        self._dataset_folder = "datasets" + os.sep + "MILE"
+        self._dataset_folder = "data" + os.sep + "MILE"
         self._dataset_type = "processed"
         self._dataset_suffix = "_sample_table.txt"
         filenames = []
@@ -23,7 +23,7 @@ class MileDataset(Dataset):
                 "%s*%s" % (self._dataset_folder + os.sep + self._dataset_type + os.sep, self._dataset_suffix))
 
             # debug only
-            filenames = filenames[:100]
+            filenames = random.sample(filenames, 200)
         else:
             self._datasets = [
                 "GSM331662 1",

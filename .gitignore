@@ -101,7 +101,7 @@ ENV/
 ### Python virtualenv ###
 TM/*
 
-datasets/*
+data/*
 
 ### IntelliJ ###
 .idea/*
