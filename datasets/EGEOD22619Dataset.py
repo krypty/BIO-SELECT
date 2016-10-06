@@ -32,6 +32,7 @@ class EGEOD22619Dataset(Dataset):
             sample_name = self._parse_sample_name(f)
             # get sample label name
             label = df[df[col_sample_name] == sample_name][col_label].iloc[0]
+            label = self._convert_label_to_int(label)
             self._y.append(label)
 
     @staticmethod
@@ -39,3 +40,7 @@ class EGEOD22619Dataset(Dataset):
         result = re.search("(GSM[\d]+)", f, re.IGNORECASE)
         # small hack : all sample name are suffixed with " 1" in the sample data csv file
         return result.group(1) + " 1"
+
+    @staticmethod
+    def _convert_label_to_int(label):
+        return 1 if label == "diseased" else 0
