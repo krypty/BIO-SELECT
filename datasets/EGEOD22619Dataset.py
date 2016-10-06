@@ -44,3 +44,14 @@ class EGEOD22619Dataset(Dataset):
     @staticmethod
     def _convert_label_to_int(label):
         return 1 if label == "diseased" else 0
+
+
+if __name__ == '__main__':
+    # execute this function at the root project folder
+    import os
+    os.chdir("..")
+
+    ds = EGEOD22619Dataset()
+    best_features_idx = [4, 10, 2]
+    best_features_names = ds.get_features_names(best_features_idx)
+    print(best_features_names)

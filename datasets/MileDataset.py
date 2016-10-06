@@ -64,3 +64,15 @@ class MileDataset(Dataset):
         result = re.search("(GSM[\d]+)", f, re.IGNORECASE)
         # small hack : all sample name are suffixed with " 1" in the sample data csv file
         return result.group(1) + " 1"
+
+
+if __name__ == '__main__':
+    # execute this function at the root project folder
+    import os
+
+    os.chdir("..")
+
+    ds = MileDataset()
+    best_features_idx = [4, 10, 2]
+    best_features_names = ds.get_features_names(best_features_idx)
+    print(best_features_names)

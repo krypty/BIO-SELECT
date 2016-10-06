@@ -10,16 +10,29 @@ class DatasetSampleParser:
     def __init__(self, filename):
         self._X = None
         self._y = None
-        self._parse(filename)
+        self._features_names = None
+        self._filename = filename  # type: str
+        self._parse()
 
     @abstractmethod
-    def _parse(self, filename):
+    def _parse(self):
         """
         Parse the values and the label from the dataset
-        :param filename: to parse
         :return: nothing but must set self._X
         """
         pass
+
+    @abstractmethod
+    def parse_features_names(self):
+        """
+        Parse the features names. It is not automatically called in the constructor so you must call this function once
+        before calling
+        :return:
+        """
+
+    def get_features_names(self):
+        assert self._features_names is not None, "Features names not parsed yet, call parse_features_name() before !"
+        return self._features_names
 
     def get_X(self):
         """
