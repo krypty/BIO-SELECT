@@ -1,7 +1,8 @@
 from abc import ABCMeta, abstractmethod
 
 
-class DatasetSampleParser(metaclass=ABCMeta):
+class DatasetSampleParser:
+    __metaclass__ = ABCMeta
     """
         DatasetSample is an abstract class to parse a Dataset sample
     """

@@ -3,7 +3,9 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 
 
-class Dataset(metaclass=ABCMeta):
+
+class Dataset:
+    __metaclass__ = ABCMeta
     """
         Dataset is an abstract class to combine a list of DatasetSample into a feature matrix
         input : filenames of the datasets
