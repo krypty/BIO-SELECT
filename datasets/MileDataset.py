@@ -59,20 +59,84 @@ class MileDataset(Dataset):
             label = df[df["Source Name"] == sample_name]["Leukemia description"].iloc[0]
             self._y.append(label)
 
+            # Regroup similar leukemias (18 subtypes into 4 main types of leukemia)
+            self._y = self._regroup_similar_leukemias(self._y)
+
     @staticmethod
     def _parse_sample_name(f):
         result = re.search("(GSM[\d]+)", f, re.IGNORECASE)
         # small hack : all sample name are suffixed with " 1" in the sample data csv file
         return result.group(1) + " 1"
 
+    @staticmethod
+    def _regroup_similar_leukemias(_y):
+        """
+        Regroup similars leukemias together. There is about 18 sub types of leukemias in this dataset. There are
+        derived from the 4 main types of leukemia which are AML, CML, ALL and CLL.
+        Example :
+
+        :param _y: original classes from the dataset
+        :return: regrouped classes with the 4 main types of leukemia
+        """
+        return map(translate_subtype_into_maintype_class, _y)
+
+
+leukemia_types_lookup_table = {
+    "AML": [
+        "AML complex aberrant karyotype",
+        "AML with inv(16)/t(16;16)",
+        "AML with normal karyotype + other abnormalities",
+        "AML with t(11q23)/MLL",
+        "AML with t(15;17)",
+        "AML with t(8;21)"
+    ],
+
+    "CML": [
+        "CML"
+    ],
+
+    "ALL": [
+        "ALL with hyperdiploid karyotype",
+        "ALL with t(12;21)",
+        "ALL with t(1;19)",
+        "Pro-B-ALL with t(11q23)/MLL",
+        "T-ALL",
+        "c-ALL/Pre-B-ALL with t(9;22)",
+        "c-ALL/Pre-B-ALL without t(9;22)",
+        "mature B-ALL with t(8;14)"
+    ],
+    "CLL": [
+        "CLL"
+    ],
+
+    "MDS": [
+        "MDS"
+    ],
+
+    "Healthy": [
+        "Non-leukemia and healthy bone marrow"
+    ]
+}
+
+
+def translate_subtype_into_maintype_class(subtype):
+    for k, v in leukemia_types_lookup_table.iteritems():
+        if subtype in leukemia_types_lookup_table[k]:
+            return k
+
+    # in the case we do not find a matching type, we keep the original subtype
+    return subtype
+
 
 if __name__ == '__main__':
-    # execute this function at the root project folder
-    import os
-
-    os.chdir("..")
-
-    ds = MileDataset()
+    ds = MileDataset(full_dataset=True)
     best_features_idx = [4, 10, 2]
     best_features_names = ds.get_features_names(best_features_idx)
     print(best_features_names)
+
+    y = list(set(ds.get_y()))
+    print(y)
+    print(len(y))
+
+    t = translate_subtype_into_maintype_class("Pro-B-ALL with t(11q23)/MLL")
+    print(t)
