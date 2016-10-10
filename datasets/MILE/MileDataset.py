@@ -6,7 +6,7 @@ import re
 import pandas as pd
 
 from datasets.Dataset import Dataset
-from datasets.MileDatasetSampleParser import MileDatasetSampleParser
+from datasets.MILE.MileDatasetSampleParser import MileDatasetSampleParser
 
 
 class MileDataset(Dataset):
