@@ -1,11 +1,12 @@
 import glob
-import os
 import re
 
 import pandas as pd
 
+import os
+
 from datasets.Dataset import Dataset
-from datasets.EGEOD22619DatasetSampleParser import EGEOD22619DatasetSampleParser
+from datasets.EGEOD22619.EGEOD22619DatasetSampleParser import EGEOD22619DatasetSampleParser
 
 
 class EGEOD22619Dataset(Dataset):
