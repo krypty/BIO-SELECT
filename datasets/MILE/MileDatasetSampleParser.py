@@ -18,6 +18,9 @@ class MileDatasetSampleParser(DatasetSampleParser):
 
 
 if __name__ == '__main__':
+    import os
+    os.chdir("../..")
+
     sample_parser = MileDatasetSampleParser(r"./data/MILE/processed/GSM329407_sample_table.txt")
     X = sample_parser.get_X()
     print(len(X))

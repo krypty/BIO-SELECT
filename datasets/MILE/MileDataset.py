@@ -10,34 +10,21 @@ from datasets.MILE.MileDatasetSampleParser import MileDatasetSampleParser
 
 
 class MileDataset(Dataset):
-    def __init__(self, full_dataset=False):
+    def __init__(self):
         self._dataset_folder = "data" + os.sep + "MILE"
         self._dataset_type = "processed"
         self._dataset_suffix = "_sample_table.txt"
         filenames = []
         self._sample_and_data = self._dataset_folder + os.sep + "mile-sample-and-data.csv"
 
-        if full_dataset is True:
-            # get all sample files in the folder
-            filenames = glob.glob(
-                "%s*%s" % (self._dataset_folder + os.sep + self._dataset_type + os.sep, self._dataset_suffix))
+        # get all sample files in the folder
+        filenames = glob.glob(
+            "%s*%s" % (self._dataset_folder + os.sep + self._dataset_type + os.sep, self._dataset_suffix))
 
-            # debug only
-            filenames = random.sample(filenames, 200)
-        else:
-            self._datasets = [
-                "GSM331662 1",
-                "GSM331663 1",
-                "GSM331664 1",
-                "GSM329407 1",
-                "GSM329408 1",
-                "GSM329409 1",
-                "GSM329410 1",
-                "GSM329411 1",
-                "GSM329412 1"
-            ]
+        assert len(filenames) > 0, "Samples not found !"
 
-            filenames = self._get_full_filenames()
+        # debug only
+        filenames = random.sample(filenames, 200)
 
         super(MileDataset, self).__init__(filenames, sample_parser=MileDatasetSampleParser)
 
@@ -129,7 +116,9 @@ def translate_subtype_into_maintype_class(subtype):
 
 
 if __name__ == '__main__':
-    ds = MileDataset(full_dataset=True)
+    os.chdir("../..")
+
+    ds = MileDataset()
     best_features_idx = [4, 10, 2]
     best_features_names = ds.get_features_names(best_features_idx)
     print(best_features_names)
