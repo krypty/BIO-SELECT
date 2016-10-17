@@ -15,19 +15,3 @@ class MileDatasetSampleParser(DatasetSampleParser):
 
     def parse_features_names(self):
         self._features_names = self._df["ID_REF"].values
-
-
-if __name__ == '__main__':
-    import os
-    os.chdir("../..")
-
-    sample_parser = MileDatasetSampleParser(r"./data/MILE/processed/GSM329407_sample_table.txt")
-    X = sample_parser.get_X()
-    print(len(X))
-
-    sample_parser.parse_features_names()
-    features_names = sample_parser.get_features_names()
-    print(features_names)
-
-    # little pseudo unit test
-    assert features_names[4] == "AFFX-HUMRGE/M10098_5_at"

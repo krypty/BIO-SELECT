@@ -15,20 +15,3 @@ class GolubDatasetSampleParser(DatasetSampleParser):
 
     def parse_features_names(self):
         self._features_names = self._df["ID_REF"].values
-
-
-if __name__ == '__main__':
-    import os
-
-    os.chdir("../..")
-
-    sample_parser = GolubDatasetSampleParser(r"./data/golub99/processed/test/sample_0_ALL.csv")
-    X = sample_parser.get_X()
-    print(len(X))
-
-    sample_parser.parse_features_names()
-    features_names = sample_parser.get_features_names()
-    print(features_names)
-
-    # little pseudo unit test
-    assert features_names[4] == "AFFX-BioC-3_at"

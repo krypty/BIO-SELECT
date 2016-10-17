@@ -46,21 +46,3 @@ class GolubDataset(Dataset):
         pattern = r'\/sample_[\d]+_([\w]+)\.csv'
         result = re.search(pattern, f, re.IGNORECASE)
         return result.group(1)
-
-
-if __name__ == '__main__':
-    os.chdir("../..")
-
-    ds = GolubDataset()
-    best_features_idx = [4, 10, 2]
-    best_features_names = ds.get_features_names(best_features_idx)
-
-    print(best_features_names)
-
-    assert best_features_names[0] == "AFFX-BioC-3_at"
-    assert best_features_names[1] == "AFFX-BioB-M_st"
-    assert best_features_names[2] == "AFFX-BioB-3_at"
-
-    y = list(set(ds.get_y()))
-    print(y)
-    print(len(y))
