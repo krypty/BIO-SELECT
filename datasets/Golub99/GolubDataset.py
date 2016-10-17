@@ -34,7 +34,7 @@ class GolubDataset(Dataset):
         for f in filenames:
             # get sample label name
             label = self._get_label_from_filename(f)
-            label = self._binarize_label(label)
+            # label = self._binarize_label(label)
             self._y.append(label)
 
     @staticmethod
