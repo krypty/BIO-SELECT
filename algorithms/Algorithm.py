@@ -19,7 +19,7 @@ class Algorithm:
         return zip(features, scores)
 
     def __init__(self, dataset):
-        self.dataset = dataset  # type: DatasetSplitter
+        self._dataset = dataset  # type: DatasetSplitter
 
     def get_best_features_by_score(self, n):
         # type: (object) -> list

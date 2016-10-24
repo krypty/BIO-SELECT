@@ -8,8 +8,8 @@ class ExtraTreesAlgorithm(Algorithm):
     def __init__(self, dataset):
         super(ExtraTreesAlgorithm, self).__init__(dataset)
 
-        X_train = self.dataset.get_X_train()
-        y_train = self.dataset.get_y_train()
+        X_train = self._dataset.get_X_train()
+        y_train = self._dataset.get_y_train()
 
         classifier = OneVsRestClassifier(
             ExtraTreesClassifier(n_jobs=-1, n_estimators=100), n_jobs=-1)
