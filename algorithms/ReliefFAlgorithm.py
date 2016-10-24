@@ -4,7 +4,7 @@ from skfeature.function.similarity_based import reliefF
 
 class ReliefFAlgorithm(Algorithm):
     def __init__(self, dataset):
-        super(ReliefFAlgorithm, self).__init__(dataset)
+        super(ReliefFAlgorithm, self).__init__(dataset, name="ReliefF")
 
         X_train = self._dataset.get_X_train()
         y_train = self._dataset.get_y_train()

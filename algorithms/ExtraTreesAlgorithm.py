@@ -6,7 +6,7 @@ from algorithms.Algorithm import Algorithm
 
 class ExtraTreesAlgorithm(Algorithm):
     def __init__(self, dataset):
-        super(ExtraTreesAlgorithm, self).__init__(dataset)
+        super(ExtraTreesAlgorithm, self).__init__(dataset, name="ExtraTrees")
 
         X_train = self._dataset.get_X_train()
         y_train = self._dataset.get_y_train()

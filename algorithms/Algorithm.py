@@ -18,8 +18,9 @@ class Algorithm:
         scores = min_max_norm(scores)
         return zip(features, scores)
 
-    def __init__(self, dataset):
+    def __init__(self, dataset, name):
         self._dataset = dataset  # type: DatasetSplitter
+        self._name = name  # type: str
 
     def get_best_features_by_score(self, n):
         # type: (object) -> list
@@ -63,3 +64,7 @@ class Algorithm:
     @abstractmethod
     def _get_best_features_by_score_unnormed(self):
         pass
+
+    @property
+    def name(self):
+        return self._name
