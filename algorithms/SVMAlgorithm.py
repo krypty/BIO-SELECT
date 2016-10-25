@@ -1,19 +1,17 @@
 from sklearn import svm
 
-from algorithms.Algorithm import Algorithm
+from algorithms.GridSearchableAlgorithm import GridSearchableAlgorithm
 
 
-class SVMAlgorithm(Algorithm):
-    def __init__(self, dataset):
-        super(SVMAlgorithm, self).__init__(dataset, name="SVM")
+class SVMAlgorithm(GridSearchableAlgorithm):
+    def __init__(self, dataset, gridsearch_params=None):
+        super(SVMAlgorithm, self).__init__(dataset, gridsearch_params=gridsearch_params, name="SVM")
 
-        X_train = self._dataset.get_X_train()
-        y_train = self._dataset.get_y_train()
+    def _init_classifier(self):
+        self._clf = svm.SVC(C=100, kernel="linear", cache_size=1024)
 
-        clf = svm.SVC(C=1, kernel="linear", cache_size=1024)
-        clf.fit(X_train, y_train)
-
-        self._scores_by_features = sorted(enumerate(clf.coef_[0]), key=lambda x: x[1], reverse=True)
+    def _retrieve_best_features(self):
+        self._scores_by_features = sorted(enumerate(self._clf.coef_[0]), key=lambda x: x[1], reverse=True)
 
     def _get_best_features_by_score_unnormed(self):
         return self._scores_by_features
