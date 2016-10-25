@@ -20,6 +20,7 @@ class GridSearchableAlgorithm(Algorithm):
             self._fit()
 
         print(self._clf.get_params())
+        print(self._clf.score(self._dataset.get_X_test(), self._dataset.get_y_test()))
 
         self._retrieve_best_features()
 
