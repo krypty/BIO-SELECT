@@ -1,22 +1,20 @@
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.multiclass import OneVsRestClassifier
 
-from algorithms.Algorithm import Algorithm
+from algorithms.GridSearchableAlgorithm import GridSearchableAlgorithm
 
 
-class ExtraTreesAlgorithm(Algorithm):
-    def __init__(self, dataset):
-        super(ExtraTreesAlgorithm, self).__init__(dataset, name="ExtraTrees")
+class ExtraTreesAlgorithm(GridSearchableAlgorithm):
+    def __init__(self, dataset, gridsearch_params=None):
+        super(ExtraTreesAlgorithm, self).__init__(dataset, gridsearch_params=gridsearch_params, name="ExtraTrees")
 
-        X_train = self._dataset.get_X_train()
-        y_train = self._dataset.get_y_train()
+    def _init_classifier(self):
+        # self._clf = OneVsRestClassifier(
+        #     ExtraTreesClassifier(n_jobs=-1, n_estimators=100), n_jobs=-1)
+        self._clf = ExtraTreesClassifier(n_jobs=-1, n_estimators=100)
 
-        classifier = OneVsRestClassifier(
-            ExtraTreesClassifier(n_jobs=-1, n_estimators=100), n_jobs=-1)
-
-        classifier.fit(X_train, y_train)
-
-        feat_importances = classifier.estimators_[0].feature_importances_
+    def _retrieve_best_features(self):
+        feat_importances = self._clf.estimators_[0].feature_importances_
         self._feat_importances_sorted = sorted(enumerate(feat_importances), key=lambda x: x[1], reverse=True)
 
     def _get_best_features_by_score_unnormed(self):
