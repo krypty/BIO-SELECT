@@ -6,6 +6,7 @@ then
 	exit 1
 fi
 
+start_date=`date`
 echo "Activate virtualenv..."
 source `which virtualenvwrapper.sh`
 workon TM_py2
@@ -17,8 +18,8 @@ recipiant="gmarigliano93@gmail.com"
 
 echo "Executing notebook and send it by mail..."
 if jupyter nbconvert --ExecutePreprocessor.timeout=None --to=html --execute $notebook  1> $logfile 2> $logfile ; then
-	cat $logfile | mutt -s "Jupyter success" -a $notebook_html -- $recipiant
+	cat $logfile | mutt -s "Jupyter success [$start_date]" -a $notebook_html -- $recipiant
 else
-	cat $logfile | mutt -s "Jupyter fail" -- $recipiant
+	cat $logfile | mutt -s "Jupyter fail [$start_date]" -- $recipiant
 fi
 
