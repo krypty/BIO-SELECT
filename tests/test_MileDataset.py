@@ -5,7 +5,7 @@ from datasets.MILE.MileDataset import MileDataset
 
 class TestMileDataset:
     def test_get_features_names(self):
-        ds = MileDataset()
+        ds = MileDataset(samples_limit=10)
 
         best_features_idx = [4, 10, 2]
         best_features_names = ds.get_features_names(best_features_idx)

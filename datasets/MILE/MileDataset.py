@@ -10,11 +10,10 @@ from datasets.MILE.MileDatasetSampleParser import MileDatasetSampleParser
 
 
 class MileDataset(Dataset):
-    def __init__(self):
+    def __init__(self, samples_limit=None):
         self._dataset_folder = "data" + os.sep + "MILE"
         self._dataset_type = "processed"
         self._dataset_suffix = "_sample_table.txt"
-        filenames = []
         self._sample_and_data = self._dataset_folder + os.sep + "mile-sample-and-data.csv"
 
         # get all sample files in the folder
@@ -23,8 +22,8 @@ class MileDataset(Dataset):
 
         assert len(filenames) > 0, "Samples not found !"
 
-        # debug only
-        #filenames = random.sample(filenames, 200)
+        if isinstance(samples_limit, int):
+            filenames = random.sample(filenames, samples_limit)
 
         super(MileDataset, self).__init__(filenames, sample_parser=MileDatasetSampleParser)
 
