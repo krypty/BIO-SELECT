@@ -24,7 +24,7 @@ class MileDataset(Dataset):
         assert len(filenames) > 0, "Samples not found !"
 
         # debug only
-        filenames = random.sample(filenames, 200)
+        #filenames = random.sample(filenames, 200)
 
         super(MileDataset, self).__init__(filenames, sample_parser=MileDatasetSampleParser)
 
