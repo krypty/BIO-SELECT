@@ -19,8 +19,8 @@ class GridSearchableAlgorithm(Algorithm):
         else:
             self._fit()
 
-        print(self._clf.get_params())
-        print(self._clf.score(self._dataset.get_X_test(), self._dataset.get_y_test()))
+        score = self._clf.score(self._dataset.get_X_test(), self._dataset.get_y_test())
+        print("[%s] score %.3f" % (self._name, score))
 
         self._retrieve_best_features()
 
