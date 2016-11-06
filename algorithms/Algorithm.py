@@ -18,11 +18,17 @@ class Algorithm:
         scores = min_max_norm(scores)
         return zip(features, scores)
 
-    def __init__(self, dataset, name):
+    def __init__(self, dataset, n, name):
+        """
+        :param dataset: the dataset
+        :param n: the number of features to get
+        :param name: name of the algorithm
+        """
         self._dataset = dataset  # type: DatasetSplitter
+        self._n = n  # type: int
         self._name = name  # type: str
 
-    def get_best_features_by_score(self, n):
+    def get_best_features_by_score(self):
         # type: (object) -> list
         """
         Get the best features by score as a list of tuple (feature, score).
@@ -30,33 +36,30 @@ class Algorithm:
         The score is min max normed.
         Example : list((2000, 0.7), (3000, 0.3))
 
-        :param n: the number of features to get
         :return: a score ranked list of the best n features according to this algorithm
         """
-        return self._normalize_scores(self._get_best_features_by_score_unnormed())[:n]
+        return self._normalize_scores(self._get_best_features_by_score_unnormed())[:self._n]
 
     @abstractmethod
-    def get_best_features_by_rank(self, n):
+    def get_best_features_by_rank(self):
         # type: (object) -> list
         """
         Get the ranked list of the n best features
         This list is sorted by feature with the best one as first element.
         Example: list(2000, 3000)
 
-        :param n: the number of features to get
         :return: a ranked list of the best n features according to this algorithm
         """
         pass
 
     @abstractmethod
-    def get_best_features(self, n):
+    def get_best_features(self):
         # type: (object) -> list
         """
         Get the unsorted list of the n best features
         This list is sorted by feature with the best one as first element.
         Example: list(2000, 3000) or list(3000, 2000)
 
-        :param n: the number of features to get
         :return: a ranked list of the best n features according to this algorithm
         """
         pass
@@ -68,3 +71,8 @@ class Algorithm:
     @property
     def name(self):
         return self._name
+
+
+class NotSupportedException(Exception):
+    def __init__(self):
+        super(NotSupportedException, self).__init__("This algorithm does not supported this function")

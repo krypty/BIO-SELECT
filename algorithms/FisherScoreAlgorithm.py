@@ -4,8 +4,8 @@ from algorithms.Algorithm import Algorithm
 
 
 class FisherScoreAlgorithm(Algorithm):
-    def __init__(self, dataset):
-        super(FisherScoreAlgorithm, self).__init__(dataset, name="Fisher Score")
+    def __init__(self, dataset, n):
+        super(FisherScoreAlgorithm, self).__init__(dataset, n, name="Fisher Score")
 
         X_train = self._dataset.get_X_train()
         y_train = self._dataset.get_y_train()
@@ -17,8 +17,8 @@ class FisherScoreAlgorithm(Algorithm):
     def _get_best_features_by_score_unnormed(self):
         return self._score_by_features
 
-    def get_best_features_by_rank(self, n):
-        return [x[0] for x in self._score_by_features[:n]]
+    def get_best_features_by_rank(self):
+        return [x[0] for x in self._score_by_features[:self._n]]
 
-    def get_best_features(self, n):
-        return self.get_best_features_by_rank(n)
+    def get_best_features(self):
+        return self.get_best_features_by_rank()

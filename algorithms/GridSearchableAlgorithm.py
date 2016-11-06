@@ -8,8 +8,8 @@ from algorithms.Algorithm import Algorithm
 class GridSearchableAlgorithm(Algorithm):
     __metaclass__ = ABCMeta
 
-    def __init__(self, dataset, name, gridsearch_params):
-        super(GridSearchableAlgorithm, self).__init__(dataset, name)
+    def __init__(self, dataset, n, name, gridsearch_params):
+        super(GridSearchableAlgorithm, self).__init__(dataset, n, name)
         self._gridsearch_params = gridsearch_params
 
         self._init_classifier()

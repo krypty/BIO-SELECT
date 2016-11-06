@@ -4,8 +4,8 @@ from algorithms.GridSearchableAlgorithm import GridSearchableAlgorithm
 
 
 class ExtraTreesAlgorithm(GridSearchableAlgorithm):
-    def __init__(self, dataset, gridsearch_params=None):
-        super(ExtraTreesAlgorithm, self).__init__(dataset, gridsearch_params=gridsearch_params, name="ExtraTrees")
+    def __init__(self, dataset, n, gridsearch_params=None):
+        super(ExtraTreesAlgorithm, self).__init__(dataset, n, gridsearch_params=gridsearch_params, name="ExtraTrees")
 
     def _init_classifier(self):
         self._clf = ExtraTreesClassifier(n_jobs=-1, n_estimators=100)
@@ -18,14 +18,14 @@ class ExtraTreesAlgorithm(GridSearchableAlgorithm):
         super(ExtraTreesAlgorithm, self)._get_best_features_by_score_unnormed()
         return self._feat_importances_sorted
 
-    def get_best_features_by_rank(self, n):
-        super(ExtraTreesAlgorithm, self).get_best_features_by_rank(n)
-        assert n < len(self._feat_importances_sorted)
+    def get_best_features_by_rank(self):
+        super(ExtraTreesAlgorithm, self).get_best_features_by_rank()
+        assert self._n < len(self._feat_importances_sorted)
 
-        return [feat_by_score[0] for feat_by_score in self._feat_importances_sorted[:n]]
+        return [feat_by_score[0] for feat_by_score in self._feat_importances_sorted[:self._n]]
 
-    def get_best_features(self, n):
-        super(ExtraTreesAlgorithm, self).get_best_features(n)
+    def get_best_features(self):
+        super(ExtraTreesAlgorithm, self).get_best_features()
 
         # we can call this function since it is the same except that we cannot use the fact that is a sorted list
-        return self.get_best_features_by_rank(n)
+        return self.get_best_features_by_rank()

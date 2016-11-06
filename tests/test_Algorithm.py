@@ -14,11 +14,11 @@ class TestAlgorithm:
         ds = DatasetSplitter(ds, test_size=0.4)
 
         n = 10
-        eta = ExtraTreesAlgorithm(dataset=ds)
-        features_by_score = eta.get_best_features_by_score(n)
+        eta = ExtraTreesAlgorithm(ds, n)
+        features_by_score = eta.get_best_features_by_score()
         print(features_by_score)
 
-        features_by_rank = eta.get_best_features_by_rank(n)
+        features_by_rank = eta.get_best_features_by_rank()
         print(features_by_rank)
 
         assert len(features_by_score) == n, "Features list is not the same size as requested"
