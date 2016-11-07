@@ -1,5 +1,7 @@
+import collections
 import random
 
+import functools
 from sklearn.neural_network import MLPClassifier
 
 from algorithms.Algorithm import Algorithm, NotSupportedException
@@ -7,13 +9,45 @@ from datasets.DatasetEncoder import DatasetEncoder
 from datasets.DatasetSplitter import DatasetSplitter
 from datasets.Golub99.GolubDataset import GolubDataset
 
+import multiprocessing as mp
+
+
+def fitness(instance, individual):
+    """
+    External wrapper method mandatory when using multiprocessing
+    See http://stackoverflow.com/a/8805244
+    :param instance: GA
+    :param individual: list
+    """
+    return instance._fitness_ann(individual)
+
+
+def timeit(method):
+    import time
+
+    def timed(*args, **kw):
+        obj = args[0]
+        ts = time.time()
+        result = method(*args, **kw)
+        te = time.time()
+
+        t_elapsed = te - ts
+        obj._bench_times[method.__name__].append(t_elapsed)
+
+        if obj._VERBOSE:
+            print('%r %2.2f sec' % (method.__name__, t_elapsed))
+        return result
+
+    return timed
+
 
 class GAANAAlgorithm(Algorithm):
-    def __init__(self, dataset, n):
+    def __init__(self, dataset, n, verbose=False):
         super(GAANAAlgorithm, self).__init__(dataset, n, name="GA ANN")
 
-        ga = GA(dataset, pop_count=100, n_features_to_keep=n, n_generations=30)
-        self._best_features = ga.run()
+        self.VERBOSE = verbose
+        self._ga = GA(dataset, pop_count=100, n_features_to_keep=n, n_generations=50, verbose=verbose)
+        self._best_features = self._ga.run()
 
     def _get_best_features_by_score_unnormed(self):
         raise NotSupportedException()
@@ -34,7 +68,7 @@ class GA:
     def _assert_unique_features(individual):
         assert len(individual) == len(set(individual)), "Child contains non unique features %s" % individual
 
-    def __init__(self, dataset, pop_count, n_features_to_keep, n_generations):
+    def __init__(self, dataset, pop_count, n_features_to_keep, n_generations, verbose=False):
         """
         :type dataset: DatasetSplitter
         :type pop_count: int
@@ -52,16 +86,25 @@ class GA:
         self._n_features_to_keep = n_features_to_keep
         self._n_generations = n_generations
 
+        self._VERBOSE = verbose
+
+        self._bench_times = collections.defaultdict(list)
+        self._fitness_history = None
+
+    @timeit
     def run(self):
         pop = self._create_population()
 
-        fitness_history = [self._grade_best_individual(pop), ]
+        self._fitness_history = [self._grade_best_individual(pop), ]
 
         for _ in range(self._n_generations):
             pop = self._evolve(pop)
-            fitness_history.append(self._grade_best_individual(pop))
+            self._fitness_history.append(self._grade_best_individual(pop))
 
-        best_list_of_features = max(fitness_history, key=lambda x: x[1])
+        # scores = [fh[0] for fh in self._fitness_history]
+        # print(scores)
+
+        best_list_of_features = max(self._fitness_history, key=lambda x: x[1])
         return best_list_of_features[0]
 
     def _create_individual(self, n_features):
@@ -89,21 +132,44 @@ class GA:
         clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 3))
         clf.fit(self._X_train[:, individual], self._y_train)
 
-        return clf.score(self._X_test[:, individual], self._y_test)
+        score = clf.score(self._X_test[:, individual], self._y_test)
+        return individual, score
 
+    # @timeit
+    # def _grade_best_individual(self, pop):
+    #     individuals_scores = map(self._fitness_ann, pop)
+    #
+    #     best_individual = max(individuals_scores, key=lambda x: x[1])
+    #     return best_individual
+
+    @timeit
     def _grade_best_individual(self, pop):
-        best_individual = (pop[0], self._fitness_ann(pop[0]))
-        for x in pop:
-            grd = self._fitness_ann(x)
+        pool = mp.Pool(processes=mp.cpu_count())
 
-            # maximize the score
-            if grd > best_individual[1]:
-                best_individual = (x, grd)
+        try:
+            individuals_scores = pool.map(functools.partial(fitness, self), pop)
+        finally:
+            pool.close()
+
+        best_individual = max(individuals_scores, key=lambda x: x[1])
         return best_individual
 
+    # @timeit
+    # def _grade_best_individual(self, pop):
+    #     from ipyparallel import Client
+    #
+    #     c = Client(profile='mycluster')
+    #     v = c[:]
+    #
+    #     individuals_scores = v.map(functools.partial(fitness, self), pop)
+    #
+    #     best_individual = max(individuals_scores, key=lambda x: x[1])
+    #     return best_individual
+
+    @timeit
     def _evolve(self, pop, retain=0.2, random_select=0.05, mutation_rate=0.01):
-        graded = [(self._fitness_ann(x), x) for x in pop]
-        graded = [x[1] for x in sorted(graded)]
+        # graded = [(self._fitness_ann(x), x) for x in pop]
+        graded = [x for x in sorted(pop, key=lambda i: i[1], reverse=True)]
         retain_length = int(len(graded) * retain)
         parents = graded[:retain_length]
         # randomly add other individuals to
@@ -135,21 +201,20 @@ class GA:
     #             children.append(child)
     #     parents.extend(children)
 
+    @timeit
     def _crossover(self, parents, pop):
         def create_child(male, female):
             child_desired_length = len(male)
 
             # use the common features between the male and female
-            inter_male_female = set().intersection(male, female)
-            union_minus_inter_male_female = list(set().union(male, female).difference(inter_male_female))
+            inter_male_female = set(male).intersection(female)
+            # print("inter %d" % len(inter_male_female))
+            union_minus_inter_male_female = list(set(male).union(female).difference(inter_male_female))
             child = list(inter_male_female)
 
             # fill the missing features using both male and female features
-            while len(child) < child_desired_length:
-                feature = random.choice(union_minus_inter_male_female)
-
-                if feature not in child:
-                    child.append(feature)
+            n_features_to_fill = child_desired_length - len(child)
+            child.extend(random.sample(union_minus_inter_male_female, n_features_to_fill))
 
             self._assert_unique_features(child)
             return child
@@ -180,6 +245,7 @@ class GA:
     #             individual[pos_to_mutate] = random.randint(
     #                 min(individual), max(individual))
 
+    @timeit
     def _mutate(self, mutation_rate, parents):
         individual_length = len(parents[0])
 
@@ -211,6 +277,6 @@ if __name__ == '__main__':
     ds = ds_encoder.encode()
     ds = DatasetSplitter(ds, test_size=0.4)
 
-    gaanaa = GAANAAlgorithm(ds, n=100)
+    gaanaa = GAANAAlgorithm(ds, n=1000, verbose=True)
     best_f = gaanaa.get_best_features()
     print("Best list of features by GAANAA %s" % best_f.__repr__())
