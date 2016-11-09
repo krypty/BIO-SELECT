@@ -48,7 +48,7 @@ class GAANAAlgorithm(Algorithm):
         super(GAANAAlgorithm, self).__init__(dataset, n, name="GA ANN")
 
         self.VERBOSE = verbose
-        self._ga = GA(dataset, pop_count=300, n_features_to_keep=n, n_generations=200, verbose=verbose)
+        self._ga = GA(dataset, pop_count=100, n_features_to_keep=n, n_generations=30, verbose=verbose)
         self._best_features = self._ga.run()
 
     def _get_best_features_by_score_unnormed(self):
@@ -96,7 +96,6 @@ class GA:
     @timeit
     def run(self):
         pop = self._create_population()
-        # print("initial pop", pop)
 
         self._fitness_history = []
 
@@ -108,11 +107,8 @@ class GA:
             best_individual = max(pop, key=lambda x: x[1])
             self._fitness_history.append(best_individual)
 
-        # scores = [fh[0] for fh in self._fitness_history]
-        # print(scores)
-
-        best_list_of_features = max(self._fitness_history, key=lambda x: x[1])
-        return best_list_of_features[0]
+        best_individual_ever = max(self._fitness_history, key=lambda x: x[1])
+        return best_individual_ever[0]
 
     def _create_individual(self, n_features):
         """
@@ -151,7 +147,6 @@ class GA:
     def _grade_pop(self, pop):
         pool = mp.Pool(processes=mp.cpu_count())
 
-        # print("pop to grade", pop)
         try:
             graded_pop = pool.map(functools.partial(fitness, self), pop)
         finally:
@@ -162,19 +157,16 @@ class GA:
     @timeit
     def _evolve(self, pop, n_elite=1, mutation_rate=0.01):
         elite_individuals = sorted(pop, key=lambda x: x[1], reverse=True)[:n_elite]
-        print("elites %.3f %s" % (elite_individuals[0][1], elite_individuals[0][0][:10]))
+        # print("elites %.3f %s" % (elite_individuals[0][1], elite_individuals[0][0][:10]))
 
         # use these parents to create children, together they form a new population
         pop = self._crossover(pop)
-        # print("crossedover pop", pop)
 
         # to increase diversity, some individuals are mutated
         self._mutate(pop, mutation_rate)
-        # print("mutated pop", pop)
 
         # keep elite individuals
         pop[:n_elite] = elite_individuals
-        # print("pop with elites", pop)
 
         return pop
 
@@ -194,11 +186,9 @@ class GA:
 
         # chose n parents in the pop using a weight (probability_distribution).
         # With replace argument set to True, it allows choosing a parent multiple times
-        # print("probability_distribution", probability_distribution)
 
         mask_pop = range(self.POP_LENGTH)
         pop_indices = np.random.choice(mask_pop, 2, p=probability_distribution, replace=True)
-        # print("pop_indices", pop_indices)
         parents = [pop[i] for i in pop_indices]
         return parents
 
@@ -224,7 +214,6 @@ class GA:
 
         # use the common features between the male and female
         inter_male_female = set(male_feat).intersection(female_feat)
-        # print("inter %d" % len(inter_male_female))
         union_minus_inter_male_female = list(set(male_feat).union(female_feat).difference(inter_male_female))
         child = list(inter_male_female)
 
@@ -262,6 +251,28 @@ if __name__ == '__main__':
     ds = ds_encoder.encode()
     ds = DatasetSplitter(ds, test_size=0.4)
 
-    gaanaa = GAANAAlgorithm(ds, n=10, verbose=True)
+    gaanaa = GAANAAlgorithm(ds, n=100, verbose=True)
     best_f = gaanaa.get_best_features()
     print("Best list of features by GAANAA %s" % best_f.__repr__())
+
+    # stability test
+    features = [6530, 5078, 784, 5396, 6934, 1183, 1959, 4523, 4782, 3251, 4425, 5562, 6460, 1981, 318, 6591, 1091,
+                7113, 4690, 1878, 6487, 6880, 2704, 1110, 5230, 2420, 5439, 6510, 4243, 5779, 4041, 3857, 5165, 2682,
+                680, 5459, 3984, 1887, 6613, 2965, 241, 3393, 6674, 3375, 3426, 6704, 990, 1439, 5398, 4024, 4260, 6509,
+                4317, 7057, 1357, 2901, 6169, 6156, 6877, 1968, 6627, 5214, 6285, 3564, 2020, 1593, 2023, 3723, 4532,
+                3367, 5502, 5599, 767, 2426, 1687, 1615, 4624, 5753, 4490, 3637, 4126, 4688, 3424, 420, 432, 630, 2619,
+                926, 4586, 3147, 5947, 2856, 266, 1844, 1881, 2142, 1805, 560, 4094, 2401]
+    assert len(features) == len(set(features))
+
+    scores = []
+    for _ in range(20):
+        clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 3))
+        clf.fit(ds.get_X_train()[:, features], ds.get_y_train())
+
+        score = clf.score(ds.get_X_test()[:, features], ds.get_y_test())
+        print(score)
+
+        scores.append(score)
+
+    print("std", np.std(scores))
+    print("mean", np.mean(scores))
