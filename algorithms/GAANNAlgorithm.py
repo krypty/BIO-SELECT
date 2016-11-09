@@ -9,6 +9,8 @@ from datasets.DatasetEncoder import DatasetEncoder
 from datasets.DatasetSplitter import DatasetSplitter
 from datasets.Golub99.GolubDataset import GolubDataset
 
+import numpy as np
+
 import multiprocessing as mp
 
 
@@ -46,7 +48,7 @@ class GAANAAlgorithm(Algorithm):
         super(GAANAAlgorithm, self).__init__(dataset, n, name="GA ANN")
 
         self.VERBOSE = verbose
-        self._ga = GA(dataset, pop_count=100, n_features_to_keep=n, n_generations=50, verbose=verbose)
+        self._ga = GA(dataset, pop_count=300, n_features_to_keep=n, n_generations=200, verbose=verbose)
         self._best_features = self._ga.run()
 
     def _get_best_features_by_score_unnormed(self):
@@ -65,8 +67,8 @@ class GA:
     """
 
     @staticmethod
-    def _assert_unique_features(individual):
-        assert len(individual) == len(set(individual)), "Child contains non unique features %s" % individual
+    def _assert_unique_features(features):
+        assert len(features) == len(set(features)), "Child contains non unique features %s" % features
 
     def __init__(self, dataset, pop_count, n_features_to_keep, n_generations, verbose=False):
         """
@@ -75,7 +77,7 @@ class GA:
         :type n_features_to_keep: int
         :type n_generations: int
         """
-        self._pop_count = pop_count
+        self.POP_LENGTH = pop_count
         self._X_train = dataset.get_X_train()
         self._y_train = dataset.get_y_train()
         self._X_test = dataset.get_X_test()
@@ -94,12 +96,17 @@ class GA:
     @timeit
     def run(self):
         pop = self._create_population()
+        # print("initial pop", pop)
 
-        self._fitness_history = [self._grade_best_individual(pop), ]
+        self._fitness_history = []
 
         for _ in range(self._n_generations):
             pop = self._evolve(pop)
-            self._fitness_history.append(self._grade_best_individual(pop))
+
+            pop = self._grade_pop(pop)
+
+            best_individual = max(pop, key=lambda x: x[1])
+            self._fitness_history.append(best_individual)
 
         # scores = [fh[0] for fh in self._fitness_history]
         # print(scores)
@@ -117,8 +124,11 @@ class GA:
         """
 
         # we use random.sample to satisfy condition 1
-        return random.sample(xrange(0, self.TOTAL_FEATURES), n_features)
+        features_list = random.sample(xrange(0, self.TOTAL_FEATURES), n_features)
+        score = 0  # 0 as it is not graded yet.
+        return features_list, score
 
+    @timeit
     def _create_population(self):
         """
         Create a number of individuals (i.e. a population).
@@ -126,143 +136,118 @@ class GA:
         count: the number of individuals in the population
         n_features: the number of features per individual
         """
-        return [self._create_individual(self._n_features_to_keep) for _ in xrange(self._pop_count)]
+        return [self._create_individual(self._n_features_to_keep) for _ in xrange(self.POP_LENGTH)]
 
     def _fitness_ann(self, individual):
+        features = individual[0]
+
         clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 3))
-        clf.fit(self._X_train[:, individual], self._y_train)
+        clf.fit(self._X_train[:, features], self._y_train)
 
-        score = clf.score(self._X_test[:, individual], self._y_test)
-        return individual, score
-
-    # @timeit
-    # def _grade_best_individual(self, pop):
-    #     individuals_scores = map(self._fitness_ann, pop)
-    #
-    #     best_individual = max(individuals_scores, key=lambda x: x[1])
-    #     return best_individual
+        score = clf.score(self._X_test[:, features], self._y_test)
+        return features, score
 
     @timeit
-    def _grade_best_individual(self, pop):
+    def _grade_pop(self, pop):
         pool = mp.Pool(processes=mp.cpu_count())
 
+        # print("pop to grade", pop)
         try:
-            individuals_scores = pool.map(functools.partial(fitness, self), pop)
+            graded_pop = pool.map(functools.partial(fitness, self), pop)
         finally:
             pool.close()
 
-        best_individual = max(individuals_scores, key=lambda x: x[1])
-        return best_individual
-
-    # @timeit
-    # def _grade_best_individual(self, pop):
-    #     from ipyparallel import Client
-    #
-    #     c = Client(profile='mycluster')
-    #     v = c[:]
-    #
-    #     individuals_scores = v.map(functools.partial(fitness, self), pop)
-    #
-    #     best_individual = max(individuals_scores, key=lambda x: x[1])
-    #     return best_individual
+        return graded_pop
 
     @timeit
-    def _evolve(self, pop, retain=0.2, random_select=0.05, mutation_rate=0.01):
-        # graded = [(self._fitness_ann(x), x) for x in pop]
-        graded = [x for x in sorted(pop, key=lambda i: i[1], reverse=True)]
-        retain_length = int(len(graded) * retain)
-        parents = graded[:retain_length]
-        # randomly add other individuals to
-        # promote genetic diversity
-        for individual in graded[retain_length:]:
-            if random_select > random.random():
-                parents.append(individual)
+    def _evolve(self, pop, n_elite=1, mutation_rate=0.01):
+        elite_individuals = sorted(pop, key=lambda x: x[1], reverse=True)[:n_elite]
+        print("elites %.3f %s" % (elite_individuals[0][1], elite_individuals[0][0][:10]))
 
-        # crossover parents to create children
-        self._crossover(parents, pop)
+        # use these parents to create children, together they form a new population
+        pop = self._crossover(pop)
+        # print("crossedover pop", pop)
 
-        # mutate some individuals
-        self._mutate(mutation_rate, parents)
+        # to increase diversity, some individuals are mutated
+        self._mutate(pop, mutation_rate)
+        # print("mutated pop", pop)
 
+        # keep elite individuals
+        pop[:n_elite] = elite_individuals
+        # print("pop with elites", pop)
+
+        return pop
+
+    def _select_parents(self, pop):
+        """
+        Selection method used is Fitness proportionate selection
+        see : https://en.wikipedia.org/wiki/Fitness_proportionate_selection
+        :param pop:
+        :return: selected parents (1 male and 1 female)
+        """
+
+        probability_distribution = None
+        sum_parents_score = sum([individual[1] for individual in pop])
+
+        if sum_parents_score > 0:
+            probability_distribution = map(lambda individual: individual[1] / float(sum_parents_score), pop)
+
+        # chose n parents in the pop using a weight (probability_distribution).
+        # With replace argument set to True, it allows choosing a parent multiple times
+        # print("probability_distribution", probability_distribution)
+
+        mask_pop = range(self.POP_LENGTH)
+        pop_indices = np.random.choice(mask_pop, 2, p=probability_distribution, replace=True)
+        # print("pop_indices", pop_indices)
+        parents = [pop[i] for i in pop_indices]
         return parents
 
-    # def crossover(parents, pop):
-    #     parents_length = len(parents)
-    #     desired_length = len(pop) - parents_length
-    #     children = []
-    #     while len(children) < desired_length:
-    #         male = random.randint(0, parents_length - 1)
-    #         female = random.randint(0, parents_length - 1)
-    #         if male != female:
-    #             male = parents[male]
-    #             female = parents[female]
-    #             half = len(male) / 2
-    #             child = male[:half] + female[half:]
-    #             children.append(child)
-    #     parents.extend(children)
+    @timeit
+    def _crossover(self, pop):
+        crossedover_pop = []
+
+        for _ in xrange(self.POP_LENGTH):
+            parents = self._select_parents(pop)
+            male = parents[0]
+            female = parents[1]
+            child = self._create_child(male, female)
+            crossedover_pop.append(child)
+
+        return crossedover_pop
+
+    def _create_child(self, male, female):
+        # use only the feature lists
+        male_feat = male[0]
+        female_feat = female[0]
+
+        child_desired_length = len(male_feat)
+
+        # use the common features between the male and female
+        inter_male_female = set(male_feat).intersection(female_feat)
+        # print("inter %d" % len(inter_male_female))
+        union_minus_inter_male_female = list(set(male_feat).union(female_feat).difference(inter_male_female))
+        child = list(inter_male_female)
+
+        # fill the missing features using both male and female features
+        n_features_to_fill = child_desired_length - len(child)
+        child.extend(random.sample(union_minus_inter_male_female, n_features_to_fill))
+
+        self._assert_unique_features(child)
+        score = 0  # 0 as it is not graded yet.
+        return child, score
 
     @timeit
-    def _crossover(self, parents, pop):
-        def create_child(male, female):
-            child_desired_length = len(male)
-
-            # use the common features between the male and female
-            inter_male_female = set(male).intersection(female)
-            # print("inter %d" % len(inter_male_female))
-            union_minus_inter_male_female = list(set(male).union(female).difference(inter_male_female))
-            child = list(inter_male_female)
-
-            # fill the missing features using both male and female features
-            n_features_to_fill = child_desired_length - len(child)
-            child.extend(random.sample(union_minus_inter_male_female, n_features_to_fill))
-
-            self._assert_unique_features(child)
-            return child
-
-        parents_length = len(parents)
-        desired_length = len(pop) - parents_length
-        children = []
-        while len(children) < desired_length:
-            male = random.randint(0, parents_length - 1)
-            female = random.randint(0, parents_length - 1)
-            if male != female:
-                male = parents[male]
-                female = parents[female]
-
-                child = create_child(male, female)
-                children.append(child)
-
-        parents.extend(children)
-
-    # def mutate(mutation_rate, parents):
-    #     for individual in parents:
-    #         if mutation_rate > random.random():
-    #             pos_to_mutate = random.randint(0, len(individual) - 1)
-    #             # this mutation is not ideal, because it
-    #             # restricts the range of possible values,
-    #             # but the function is unaware of the min/max
-    #             # values used to create the individuals,
-    #             individual[pos_to_mutate] = random.randint(
-    #                 min(individual), max(individual))
-
-    @timeit
-    def _mutate(self, mutation_rate, parents):
-        individual_length = len(parents[0])
-
-        for individual in parents:
-            if mutation_rate > random.random():
-                pos_to_mutate = random.randint(0, individual_length - 1)
-                # this mutation is not ideal, because it
-                # restricts the range of possible values,
-                # but the function is unaware of the min/max
-                # values used to create the individuals,
-
-                new_feature = random.randint(0, self.TOTAL_FEATURES - 1)
-                while new_feature in individual:
+    def _mutate(self, pop, mutation_rate):
+        for individual in pop:
+            for gene in xrange(len(individual)):
+                if mutation_rate > random.random():
                     new_feature = random.randint(0, self.TOTAL_FEATURES - 1)
 
-                individual[pos_to_mutate] = new_feature
-                self._assert_unique_features(individual)
+                    while new_feature in individual[0]:
+                        new_feature = random.randint(0, self.TOTAL_FEATURES - 1)
+
+                    individual[0][gene] = new_feature
+                    self._assert_unique_features(individual[0])
 
 
 if __name__ == '__main__':
@@ -277,6 +262,6 @@ if __name__ == '__main__':
     ds = ds_encoder.encode()
     ds = DatasetSplitter(ds, test_size=0.4)
 
-    gaanaa = GAANAAlgorithm(ds, n=1000, verbose=True)
+    gaanaa = GAANAAlgorithm(ds, n=10, verbose=True)
     best_f = gaanaa.get_best_features()
     print("Best list of features by GAANAA %s" % best_f.__repr__())
