@@ -43,9 +43,9 @@ def timeit(method):
     return timed
 
 
-class GAANAAlgorithm(Algorithm):
+class GAANNAlgorithm(Algorithm):
     def __init__(self, dataset, n, verbose=False):
-        super(GAANAAlgorithm, self).__init__(dataset, n, name="GA ANN")
+        super(GAANNAlgorithm, self).__init__(dataset, n, name="GA ANN")
 
         self.VERBOSE = verbose
         self._ga = GA(dataset, pop_count=100, n_features_to_keep=n, n_generations=30, verbose=verbose)
@@ -251,7 +251,7 @@ if __name__ == '__main__':
     ds = ds_encoder.encode()
     ds = DatasetSplitter(ds, test_size=0.4)
 
-    gaanaa = GAANAAlgorithm(ds, n=100, verbose=True)
+    gaanaa = GAANNAlgorithm(ds, n=100, verbose=True)
     best_f = gaanaa.get_best_features()
     print("Best list of features by GAANAA %s" % best_f.__repr__())
 
