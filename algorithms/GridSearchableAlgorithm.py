@@ -50,6 +50,14 @@ class GridSearchableAlgorithm(Algorithm):
     def _retrieve_best_features(self):
         pass
 
+    def get_score(self):
+        try:
+            X_test = self._dataset.get_X_test()
+            y_test = self._dataset.get_y_test()
+            return self._clf.score(X_test, y_test)
+        except AttributeError:
+            super(GridSearchableAlgorithm, self).get_score()
+
     @property
     def best_params(self):
         try:

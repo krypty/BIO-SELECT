@@ -13,6 +13,8 @@ import numpy as np
 
 import multiprocessing as mp
 
+from datasets.MILE.MileDataset import MileDataset
+
 
 def fitness(instance, individual):
     """
@@ -49,7 +51,7 @@ class GAANNAlgorithm(Algorithm):
 
         self.VERBOSE = verbose
         self._ga = GA(dataset, pop_count=100, n_features_to_keep=n, n_generations=30, verbose=verbose)
-        self._best_features = self._ga.run()
+        self._best_features, self._score = self._ga.run()
 
     def _get_best_features_by_score_unnormed(self):
         raise NotSupportedException()
@@ -59,6 +61,9 @@ class GAANNAlgorithm(Algorithm):
 
     def get_best_features(self):
         return self._best_features
+
+    def get_score(self):
+        return self._score
 
 
 class GA:
@@ -108,7 +113,7 @@ class GA:
             self._fitness_history.append(best_individual)
 
         best_individual_ever = max(self._fitness_history, key=lambda x: x[1])
-        return best_individual_ever[0]
+        return best_individual_ever
 
     def _create_individual(self, n_features):
         """
@@ -244,13 +249,20 @@ if __name__ == '__main__':
 
     os.chdir("..")
 
-    ds = GolubDataset()
+    # ds = GolubDataset()
+    print("Loading dataset...")
+    ds = MileDataset()
+    print("Dataset loaded !")
 
     # encode Dataset string classes into numbers
+    print("Encoding ds...")
     ds_encoder = DatasetEncoder(ds)
     ds = ds_encoder.encode()
+    print("ds encoded !")
     ds = DatasetSplitter(ds, test_size=0.4)
+    print("ds splitted !")
 
+    print("Starting algorithm....")
     gaanaa = GAANNAlgorithm(ds, n=100, verbose=True)
     best_f = gaanaa.get_best_features()
     print("Best list of features by GAANAA %s" % best_f.__repr__())

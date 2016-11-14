@@ -68,6 +68,14 @@ class Algorithm:
     def _get_best_features_by_score_unnormed(self):
         pass
 
+    def get_score(self):
+        """
+        Returns the score of the algorithm. This can be used to balance the list of feature provided.
+        For example, if the score is low then the list might not be as convincing as wanted.
+        :return: the score of the algorithm
+        """
+        raise NotSupportedException()
+
     @property
     def name(self):
         return self._name
