@@ -1,13 +1,29 @@
 # BIOSELECT
 
+*Note: all the datasets are not provided in this repository since they are very heavy*
+
 ## How to get it ?
 
 ### Using Docker (recommanded)
 
 **On GNU/Linux**
+``` bash
+./build-docker.sh
 ```
-docker build -t bioselect .
-docker run -it -v `pwd`:/code -p 8888:8888 --rm bioselect
+
+Then you can run Jupyter to work on the notebooks
+``` bash
+./run-jupyter-docker.sh
+```
+
+Or run a single one or all notebooks and get the results in **HTML in the output folder**
+``` bash
+./run-notebook-docker.sh <notebook_to_execute> <dataset>
+# Example : ./run-notebook-docker.sh pipeline.ipynb Golub
+# Datasets available : Golub, MILE or EGEOD22619. All datasets can be found in datasets/DatasetLoader.py
+
+# or you can run all of them (only if you have enough coffee...)
+./run-all-notebooks-docker.sh <dataset>
 ```
 
 **On Windows**
