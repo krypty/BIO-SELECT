@@ -25,6 +25,9 @@ def fitness(instance, individual):
 
 
 def timeit(method):
+    """
+    Simple decorator to print the execution time of a method
+    """
     import time
 
     def timed(*args, **kw):
@@ -48,7 +51,7 @@ class GAANNAlgorithm(Algorithm):
         super(GAANNAlgorithm, self).__init__(dataset, n, name="GA ANN")
 
         self.VERBOSE = verbose
-        self._ga = GA(dataset, pop_count=200, n_features_to_keep=n, n_generations=100, verbose=verbose)
+        self._ga = GA(dataset, pop_count=100, n_features_to_keep=n, n_generations=50, verbose=verbose)
         self._best_features, self._score = self._ga.run()
 
     def _get_best_features_by_score_unnormed(self):
@@ -100,6 +103,7 @@ class GA:
 
         self._nb_classes = np.max(self._y_train) + 1
 
+        # used for the Keras version, only kept for documentation
         # # print('Convert class vector to binary class matrix (for use with categorical_crossentropy)')
         # self._Y_train = np_utils.to_categorical(self._y_train, self._nb_classes)
         # self._Y_test = np_utils.to_categorical(self._y_test, self._nb_classes)
@@ -111,12 +115,13 @@ class GA:
         self._fitness_history = []
         self._score_history = []
 
-        for _ in range(self._n_generations):
+        for gen in range(self._n_generations):
             pop = self._evolve(pop)
 
             pop = self._grade_pop(pop)
 
             pop_score = self._compute_score_from_pop(pop)
+            print("population score at generations %d: %.3f" % (gen, pop_score))
             self._score_history.append(pop_score)
 
             best_individual = max(pop, key=lambda x: x[1])
@@ -153,39 +158,12 @@ class GA:
         features = individual[0]
 
         clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(30, 10))
-        # clf.fit(self._X_train[:, features], self._y_train)
-        #
-        # score = clf.score(self._X_test[:, features], self._y_test)
 
-        scores = cross_val_score(clf, self._dataset.get_X()[:, features], self._dataset.get_y(), cv=3, n_jobs=1)
+        scores = cross_val_score(clf, self._dataset.get_X()[:, features], self._dataset.get_y(), cv=3, n_jobs=-1)
         score = np.median(scores)
         return features, score
 
-    # def yolo(self):
-    #     features = [6530, 5078, 784, 5396, 6934, 1183, 1959, 4523, 4782, 3251, 4425, 5562, 6460, 1981, 318, 6591, 1091,
-    #                 7113, 4690, 1878, 6487, 6880, 2704, 1110, 5230, 2420, 5439, 6510, 4243, 5779, 4041, 3857, 5165,
-    #                 2682,
-    #                 680, 5459, 3984, 1887, 6613, 2965, 241, 3393, 6674, 3375, 3426, 6704, 990, 1439, 5398, 4024, 4260,
-    #                 6509,
-    #                 4317, 7057, 1357, 2901, 6169, 6156, 6877, 1968, 6627, 5214, 6285, 3564, 2020, 1593, 2023, 3723,
-    #                 4532,
-    #                 3367, 5502, 5599, 767, 2426, 1687, 1615, 4624, 5753, 4490, 3637, 4126, 4688, 3424, 420, 432, 630,
-    #                 2619,
-    #                 926, 4586, 3147, 5947, 2856, 266, 1844, 1881, 2142, 1805, 560, 4094, 2401]
-    #
-    #     individual = (features, 0)
-    #
-    #     scores = []
-    #     for _ in range(20):
-    #         # feats, score = self._fitness_ann2(individual)
-    #         feats, score = self._fitness_ann(individual)
-    #         print(score)
-    #
-    #         scores.append(score)
-    #
-    #     print("std", np.std(scores))
-    #     print("mean", np.mean(scores))
-
+    # This is an attempt using Keras instead of scikit to see if there is a speed up.
     # def _fitness_ann2(self, individual):
     #     features = individual[0]
     #
@@ -210,49 +188,26 @@ class GA:
 
     @timeit
     def _grade_pop(self, pop):
+        # sequential version,
+        graded_pop = map(self._fitness_ann, pop)
+        return graded_pop
 
-        # graded_pop = map(self._fitness_ann, pop)
-        # return graded_pop
-
-        # def init_worker():
-        #     import signal
-        #     signal.signal(signal.SIGINT, signal.SIG_IGN)
-
-        pool = mp.Pool(processes=mp.cpu_count())
-
-        try:
-            graded_pop = pool.map(functools.partial(fitness, self), pop)
-            pool.close()
-            pool.join()
-
-            return graded_pop
-        except Exception as e:
-            print(e)
-            pool.terminate()
-            pool.join()
-
-            # pool = ThreadPool(processes=mp.cpu_count(), initargs=init_worker)
-            # try:
-            #     graded_pop = pool.map(functools.partial(fitness, self), pop)
-            #
-            #     pool.close()
-            #     pool.join()
-            #     print("finished")
-            #     return graded_pop
-            # except:
-            #     print("pool error. Program will exit")
-            #     pool.terminate()
-            #     pool.join()
-            #     sys.exit(-1)
+        # Multiprocessing version, not used anymore because the crossvalidation can be parallelised
+        # pool = mp.Pool(processes=mp.cpu_count())
+        #
+        # try:
+        #     graded_pop = pool.map(functools.partial(fitness, self), pop)
+        #     pool.close()
+        #     pool.join()
+        #
+        #     return graded_pop
+        # except Exception as e:
+        #     print(e)
+        #     pool.terminate()
+        #     pool.join()
 
     def _compute_score_from_pop(self, pop):
-        # mean
-        # return np.mean([individual[1] for individual in pop])
-
-        # median
-        # return np.median([individual[1] for individual in pop])
-
-        # 75 centiles
+        # 75 percentiles
         return np.percentile([individual[1] for individual in pop], 75)
 
     @timeit
@@ -340,16 +295,13 @@ class GA:
                     self._assert_unique_features(individual[0])
 
 
+# Example of use of this algorithm, used here to make quick tests.
 if __name__ == '__main__':
     import os
 
     np.random.seed(4)  # for reproducibility
 
     os.chdir("..")
-
-    # NUM_THREADS = 4
-    # sess = tf.Session(config=tf.ConfigProto(
-    #     intra_op_parallelism_threads=NUM_THREADS))
 
     os.environ["KERAS_BACKEND"] = "theano"
 
@@ -367,32 +319,10 @@ if __name__ == '__main__':
     print("ds splitted !")
 
     print("Starting algorithm....")
-    gaanaa = GAANNAlgorithm(ds, n=100, verbose=True)
-    score = gaanaa.get_score()
+    gaanna = GAANNAlgorithm(ds, n=100, verbose=True)
+    score = gaanna.get_score()
     print("score", score)
-    best_f = gaanaa.get_best_features()
-    print("Best list of features by GAANAA %s" % best_f.__repr__())
+    best_f = gaanna.get_best_features()
+    print("Best list of features by GAANNA %s" % best_f.__repr__())
 
-    print("score history", gaanaa._ga._score_history)
-
-    # stability test
-    # features = [6530, 5078, 784, 5396, 6934, 1183, 1959, 4523, 4782, 3251, 4425, 5562, 6460, 1981, 318, 6591, 1091,
-    #             7113, 4690, 1878, 6487, 6880, 2704, 1110, 5230, 2420, 5439, 6510, 4243, 5779, 4041, 3857, 5165, 2682,
-    #             680, 5459, 3984, 1887, 6613, 2965, 241, 3393, 6674, 3375, 3426, 6704, 990, 1439, 5398, 4024, 4260, 6509,
-    #             4317, 7057, 1357, 2901, 6169, 6156, 6877, 1968, 6627, 5214, 6285, 3564, 2020, 1593, 2023, 3723, 4532,
-    #             3367, 5502, 5599, 767, 2426, 1687, 1615, 4624, 5753, 4490, 3637, 4126, 4688, 3424, 420, 432, 630, 2619,
-    #             926, 4586, 3147, 5947, 2856, 266, 1844, 1881, 2142, 1805, 560, 4094, 2401]
-    # assert len(features) == len(set(features))
-    #
-    # scores = []
-    # for _ in range(20):
-    #     clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 3))
-    #     clf.fit(ds.get_X_train()[:, features], ds.get_y_train())
-    #
-    #     score = clf.score(ds.get_X_test()[:, features], ds.get_y_test())
-    #     print(score)
-    #
-    #     scores.append(score)
-    #
-    # print("std", np.std(scores))
-    # print("mean", np.mean(scores))
+    print("score history", gaanna._ga._score_history)
