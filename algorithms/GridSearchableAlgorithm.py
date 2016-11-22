@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
+from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import GridSearchCV
 
 from algorithms.Algorithm import Algorithm
@@ -20,7 +21,6 @@ class GridSearchableAlgorithm(Algorithm):
             self._fit()
 
         score = self._clf.score(self._dataset.get_X_test(), self._dataset.get_y_test())
-        print("[%s] score %.3f" % (self._name, score))
 
         self._retrieve_best_features()
 
@@ -65,3 +65,7 @@ class GridSearchableAlgorithm(Algorithm):
         except AttributeError:
             raise AttributeError(
                 "Impossible to retrieve to best grid search params because grid search has not been used")
+
+    def get_confusion_matrix(self):
+        y_pred = self._clf.predict(self._dataset.get_X_test())
+        return confusion_matrix(self._dataset.get_y_test(), y_pred)
