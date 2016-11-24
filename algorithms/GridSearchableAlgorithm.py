@@ -32,7 +32,7 @@ class GridSearchableAlgorithm(Algorithm):
         X_train = self._dataset.get_X_train()
         y_train = self._dataset.get_y_train()
 
-        self._clf_gs = GridSearchCV(self._clf, param_grid=self._gridsearch_params, n_jobs=-1, cv=3)
+        self._clf_gs = GridSearchCV(self._clf, param_grid=self._gridsearch_params, n_jobs=2, cv=3)
 
         self._clf_gs = self._clf_gs.fit(X_train, y_train)
 

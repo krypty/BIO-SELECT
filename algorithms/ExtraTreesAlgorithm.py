@@ -8,7 +8,7 @@ class ExtraTreesAlgorithm(GridSearchableAlgorithm):
         super(ExtraTreesAlgorithm, self).__init__(dataset, n, gridsearch_params=gridsearch_params, name="ExtraTrees")
 
     def _init_classifier(self):
-        self._clf = ExtraTreesClassifier(n_jobs=-1, n_estimators=100)
+        self._clf = ExtraTreesClassifier(n_jobs=2, n_estimators=100)
 
     def _retrieve_best_features(self):
         feat_importances = self._clf.estimators_[0].feature_importances_
