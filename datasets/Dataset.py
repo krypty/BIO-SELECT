@@ -24,7 +24,7 @@ class Dataset:
         self._y = []
         self._parse_data(filenames)
         self._parse_labels(filenames)
-        self._parse_features_names(filenames[0])
+        self._parse_features(filenames[0])
 
     def _parse_data(self, filenames):
         for f in filenames:
@@ -34,10 +34,14 @@ class Dataset:
         # convert 2d-array into np array
         self._X = np.array(self._X)
 
-    def _parse_features_names(self, filename):
+    def _parse_features(self, filename):
         dss = self._sample_parser(filename)
         dss.parse_features_names()
+
+        # idx -> name
         self._features_names = dss.get_features_names()
+        # name -> idx
+        self._features_indices = {feature: idx for (idx, feature) in enumerate(self._features_names)}
 
     @abstractmethod
     def _parse_labels(self, filenames):
@@ -56,3 +60,11 @@ class Dataset:
         :return: array with the name of the given features
         """
         return [self._features_names[idx] for idx in features_idx]
+
+    def get_features_indices(self, features_names):
+        """
+        Return the features indices given their names in the dataset
+        :param features_names: features names as an array
+        :return: array with the indices of the given features names
+        """
+        return [self._features_indices[name] for name in features_names]
