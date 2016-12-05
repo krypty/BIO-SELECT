@@ -12,7 +12,7 @@ class Algorithm:
     def _normalize_scores(features_by_score):
         def min_max_norm(X):
             min_x = np.min(X)
-            return (X - min_x) / (np.max(X) - min_x)
+            return (X - min_x) / (np.max(X) - float(min_x))
 
         features, scores = zip(*features_by_score)
         scores = min_max_norm(scores)
