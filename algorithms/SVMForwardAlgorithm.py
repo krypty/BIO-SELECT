@@ -15,11 +15,11 @@ class SVMForwardAlgorithm(Algorithm):
         y = dataset.get_y()
         self._F = svm_forward.svm_forward(X, y, n)
 
-    def get_best_features(self):
-        return self._F
+    def _get_best_features_by_score_unnormed(self):
+        raise NotSupportedException()
 
     def get_best_features_by_rank(self):
         raise NotSupportedException()
 
-    def _get_best_features_by_score_unnormed(self):
-        raise NotSupportedException()
+    def get_best_features(self):
+        return self._F
