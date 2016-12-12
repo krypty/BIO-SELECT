@@ -10,48 +10,20 @@ class CSVFeaturesExporter(FeaturesExporter):
         self._base_filename = "outputs" + os.sep + self._group_name
 
     def export(self):
-        self._export_features()
-        self._export_features_by_rank()
-        self._export_features_by_score()
+        self._export_features(features_type="features")
+        self._export_features(features_type="features_by_rank")
+        self._export_features(features_type="features_by_score")
 
-    def _export_features(self):
-        """
-        Export list of features
-        Line format: algorithm_name;feat0;feat1;featN
-        """
-        filename = self._base_filename + "_features.csv"
-
-        subsets_feats = [(s_name, s_feats["features"]) for (s_name, s_feats) in self._subsets.items()]
-
-        with open(filename, "wb") as csvfile:
-            for feats in subsets_feats:
-                line = feats[0] + self._DELIMITER + self._DELIMITER.join([str(f) for f in feats[1]])
-                csvfile.write(line + os.linesep)
-
-    def _export_features_by_rank(self):
-        """
-        Export list of features by rank
-        Line format: algorithm_name;feat0;feat1;featN
-        """
-        filename = self._base_filename + "_features_by_rank.csv"
-
-        subsets_feats = [(s_name, s_feats["features_by_rank"]) for (s_name, s_feats) in self._subsets.items()]
-
-        with open(filename, "wb") as csvfile:
-            for feats in subsets_feats:
-                line = feats[0] + self._DELIMITER + self._DELIMITER.join([str(f) for f in feats[1]])
-                csvfile.write(line + os.linesep)
-
-    def _export_features_by_score(self):
+    def _export_features(self, features_type):
         """
         Export list of features by score
         Line format: algorithm_name;feat0,score0;feat1,score1;featN,scoreN
         """
-        filename = self._base_filename + "_features_by_score.csv"
+        filename = self._base_filename + "_" + features_type + ".csv"
 
-        subsets_feats = [(s_name, s_feats["features_by_score"]) for (s_name, s_feats) in self._subsets.items()]
+        subsets_feats = [(s_name, s_feats[features_type]) for (s_name, s_feats) in self._subsets.items()]
 
-        with open(filename, "wb") as csvfile:
+        with open(filename, "wb") as csv_file:
             for feats in subsets_feats:
                 line = feats[0] + self._DELIMITER + self._DELIMITER.join(["%d,%.5f" % (f[0], f[1]) for f in feats[1]])
-                csvfile.write(line + os.linesep)
+                csv_file.write(line + os.linesep)
