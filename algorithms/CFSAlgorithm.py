@@ -1,13 +1,10 @@
 from skfeature.function.statistical_based import CFS
 
 from algorithms.Algorithm import Algorithm, NotSupportedException
+from algorithms.DeterministAlgorithm import DeterministAlgorithm
 
 
-class CFSAlgorithm(Algorithm):
-    """
-    This algorithm is determinist
-    """
-
+class CFSAlgorithm(Algorithm, DeterministAlgorithm):
     def __init__(self, dataset, n=None):
         super(CFSAlgorithm, self).__init__(dataset, n, "CFS")
 

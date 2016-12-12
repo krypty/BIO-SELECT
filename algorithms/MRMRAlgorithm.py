@@ -1,13 +1,10 @@
 from skfeature.function.information_theoretical_based import MRMR
 
 from algorithms.Algorithm import Algorithm, NotSupportedException
+from algorithms.DeterministAlgorithm import DeterministAlgorithm
 
 
-class MRMRAlgorithm(Algorithm):
-    """
-    This algorithm is determinist
-    """
-
+class MRMRAlgorithm(Algorithm, DeterministAlgorithm):
     def __init__(self, dataset, n=None):
         super(MRMRAlgorithm, self).__init__(dataset, n, "MRMR")
 

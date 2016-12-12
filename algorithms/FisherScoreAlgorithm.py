@@ -1,9 +1,10 @@
 from skfeature.function.similarity_based import fisher_score
 
 from algorithms.Algorithm import Algorithm
+from algorithms.DeterministAlgorithm import DeterministAlgorithm
 
 
-class FisherScoreAlgorithm(Algorithm):
+class FisherScoreAlgorithm(Algorithm, DeterministAlgorithm):
     def __init__(self, dataset, n):
         super(FisherScoreAlgorithm, self).__init__(dataset, n, name="Fisher Score")
 

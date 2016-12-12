@@ -1,9 +1,10 @@
 from sklearn.feature_selection import f_classif
 
 from algorithms.Algorithm import Algorithm
+from algorithms.DeterministAlgorithm import DeterministAlgorithm
 
 
-class FValueAlgorithm(Algorithm):
+class FValueAlgorithm(Algorithm, DeterministAlgorithm):
     def __init__(self, dataset, n):
         super(FValueAlgorithm, self).__init__(dataset, n, name="F Value")
 

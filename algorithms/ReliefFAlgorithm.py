@@ -1,8 +1,10 @@
-from algorithms.Algorithm import Algorithm
 from skfeature.function.similarity_based import reliefF
 
+from algorithms.Algorithm import Algorithm
+from algorithms.DeterministAlgorithm import DeterministAlgorithm
 
-class ReliefFAlgorithm(Algorithm):
+
+class ReliefFAlgorithm(Algorithm, DeterministAlgorithm):
     def __init__(self, dataset, n):
         super(ReliefFAlgorithm, self).__init__(dataset, n, name="ReliefF")
 
