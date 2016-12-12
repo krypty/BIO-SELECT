@@ -7,7 +7,7 @@ class DummyDataset(Dataset):
     """
     def __init__(self):
         self._X = [
-            [60, 180],
+            [60, 190],
             [80, 180],
             [40, 150],
             [70, 170]
