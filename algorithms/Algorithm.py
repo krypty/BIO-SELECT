@@ -38,7 +38,8 @@ class Algorithm:
 
         :return: a score ranked list of the best n features according to this algorithm
         """
-        return self._normalize_scores(self._get_best_features_by_score_unnormed())[:self._n]
+        n_features_to_keep = min(len(self._get_best_features_by_score_unnormed()), self._n)
+        return self._normalize_scores(self._get_best_features_by_score_unnormed())[:n_features_to_keep]
 
     @abstractmethod
     def get_best_features_by_rank(self):
