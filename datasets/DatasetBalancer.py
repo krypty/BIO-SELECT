@@ -19,8 +19,6 @@ class DatasetBalancer:
         try:
             self._ds._X_train, self._ds._y_train = self._balancer.fit_sample(self._ds.get_X_train(),
                                                                              self._ds.get_y_train())
-            print("train")
         except AttributeError:
             self._ds._X, self._ds._y = self._balancer.fit_sample(self._ds.get_X(), self._ds.get_y())
-            print("whole")
         return self._ds
