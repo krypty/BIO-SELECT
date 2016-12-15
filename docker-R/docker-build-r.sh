@@ -1,2 +1,2 @@
 #/bin/bash
-docker build -t docker-r .
+docker build -t rdocker .
