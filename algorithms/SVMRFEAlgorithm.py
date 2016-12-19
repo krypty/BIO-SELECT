@@ -13,8 +13,8 @@ class SVMRFEAlgorithm(Algorithm):
         X_test = self._dataset.get_X_test()
         y_test = self._dataset.get_y_test()
 
-        estimator = SVR(kernel="linear", gamma=0.3, C=100)
-        self._clf = RFE(estimator, n_features_to_select=self._n, step=0.05)
+        estimator = SVR(kernel="linear", gamma="auto", C=10, cache_size=2000)
+        self._clf = RFE(estimator, n_features_to_select=self._n, step=0.2, verbose=True)
         self._clf = self._clf.fit(X_train, y_train)
 
         # list of tuple, [0] is the feature index, [1] is the rank (higher is better)
