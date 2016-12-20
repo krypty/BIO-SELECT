@@ -7,6 +7,8 @@ RUN echo 'source("https://bioconductor.org/biocLite.R")' > /tmp/packages.R && \
     echo 'biocLite("Biobase")' >> /tmp/packages.R && \
     echo 'biocLite("GEOquery")' >> /tmp/packages.R && \
     echo 'biocLite("limma")' >> /tmp/packages.R && \
+    echo 'biocLite("golubEsets")' >> /tmp/packages.R && \
+
     Rscript /tmp/packages.R
 
 ADD limma-*.R ./
@@ -14,4 +16,5 @@ ADD limma-*.R ./
 VOLUME dataset
 
 #CMD ["Rscript", "--no-save", "--no-restore", "--verbose",  "limma-mile.R"]
-CMD ["Rscript", "--no-save", "--no-restore", "--verbose",  "limma-golub.R"]
+#CMD ["Rscript", "--no-save", "--no-restore", "--verbose",  "limma-golub.R"]
+CMD ["/bin/bash"]
