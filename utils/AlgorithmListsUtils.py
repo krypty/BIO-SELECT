@@ -27,10 +27,12 @@ def compute_score_of_lists(merged_list_of_tuple, higher_is_better):
     Criteria of a good score:
         1. We want to favor the features that are selected multiple times by the same algorithm
         2. If two features have been selected the same amount of times, we want to be able to decide between them
+        3. We prefer to have features that have been selected multiple times (even if they have a higher rank or a lower score) that keeping features that only appear once but with a better score/rang
 
     Answers to the criteria:
         1. We count the number of times the feature has been selected
         2. We take the mean of the rank/score of this feature among the lists
+        3. We increase the weight of the number of occurrence compared to the score
 
     :param merged_list_of_tuple: list of list of features selected by an Algorithm
     :param higher_is_better: False if a higher score is better. True if a lower score is better
@@ -38,7 +40,7 @@ def compute_score_of_lists(merged_list_of_tuple, higher_is_better):
     by decreasing score, so [0] is the best feature/the feature with the highest score.
     """
     # boost the score if the feature is selected multiples times by the Algorithm
-    occurrence_bonus = 1.5
+    occurrence_bonus = 1.2
 
     def keyfunc(x): return x[0]
 
@@ -47,12 +49,12 @@ def compute_score_of_lists(merged_list_of_tuple, higher_is_better):
 
     def score_func(n_occurrences, values):
         item_median = np.median(values)
-        return (n_occurrences * occurrence_bonus) * item_median
+        return (n_occurrences * occurrence_bonus) + item_median
 
     def score_func_lower_is_better(n_occurrences, values):
         item_median = np.median(values)
         # use 1/x function to inverse the score. Use 1 + median to avoid zero division
-        return (n_occurrences * occurrence_bonus) * (1.0 / (1.0 + item_median))
+        return (n_occurrences * occurrence_bonus) + (1.0 / (1.0 + item_median))
 
     score_list = []
     for item in grouped_list:

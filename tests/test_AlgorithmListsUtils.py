@@ -51,12 +51,12 @@ class TestAlgorithmListsUtils:
         computed_list_of_ranks = compute_score_of_lists(rank_all_runs, higher_is_better=False)
         print(computed_list_of_ranks)
 
-        assert TestAlgorithmListsUtils._is_tuple_equals(computed_list_of_ranks[0], (1, 4.5))
-        assert TestAlgorithmListsUtils._is_tuple_equals(computed_list_of_ranks[1], (2, 2.25))
-        assert TestAlgorithmListsUtils._is_tuple_equals(computed_list_of_ranks[2], (6, 1.2))
-        assert TestAlgorithmListsUtils._is_tuple_equals(computed_list_of_ranks[3], (3, 0.857142))
-        assert TestAlgorithmListsUtils._is_tuple_equals(computed_list_of_ranks[4], (8, 0.5))
-        assert TestAlgorithmListsUtils._is_tuple_equals(computed_list_of_ranks[5], (4, 0.375))
+        assert TestAlgorithmListsUtils._is_tuple_equals(computed_list_of_ranks[0], (1, 4.5999))
+        assert TestAlgorithmListsUtils._is_tuple_equals(computed_list_of_ranks[1], (2, 4.0999))
+        assert TestAlgorithmListsUtils._is_tuple_equals(computed_list_of_ranks[2], (6, 2.7999))
+        assert TestAlgorithmListsUtils._is_tuple_equals(computed_list_of_ranks[3], (3, 2.6857))
+        assert TestAlgorithmListsUtils._is_tuple_equals(computed_list_of_ranks[4], (8, 1.5333))
+        assert TestAlgorithmListsUtils._is_tuple_equals(computed_list_of_ranks[5], (4, 1.45))
 
         # keep the list as long as the originals, assuming all lists are the same length for the given algorithm
         computed_list_of_ranks = computed_list_of_ranks[:len(rank_run1)]
@@ -81,12 +81,12 @@ class TestAlgorithmListsUtils:
         computed_list_of_scores = compute_score_of_lists(score_all_runs, higher_is_better=True)
         print(computed_list_of_scores)
 
-        assert TestAlgorithmListsUtils._is_tuple_equals(computed_list_of_scores[0], (2, 3.6))
-        assert TestAlgorithmListsUtils._is_tuple_equals(computed_list_of_scores[1], (1, 2.25))
-        assert TestAlgorithmListsUtils._is_tuple_equals(computed_list_of_scores[2], (6, 1.65))
-        assert TestAlgorithmListsUtils._is_tuple_equals(computed_list_of_scores[3], (3, 1.2))
-        assert TestAlgorithmListsUtils._is_tuple_equals(computed_list_of_scores[4], (8, 1.2))
-        assert TestAlgorithmListsUtils._is_tuple_equals(computed_list_of_scores[5], (4, 0.15))
+        assert TestAlgorithmListsUtils._is_tuple_equals(computed_list_of_scores[0], (2, 4.3999))
+        assert TestAlgorithmListsUtils._is_tuple_equals(computed_list_of_scores[1], (1, 4.0999))
+        assert TestAlgorithmListsUtils._is_tuple_equals(computed_list_of_scores[2], (6, 2.95))
+        assert TestAlgorithmListsUtils._is_tuple_equals(computed_list_of_scores[3], (3, 2.8))
+        assert TestAlgorithmListsUtils._is_tuple_equals(computed_list_of_scores[4], (8, 2.0))
+        assert TestAlgorithmListsUtils._is_tuple_equals(computed_list_of_scores[5], (4, 1.3))
 
         # keep the list as long as the originals, assuming all lists are the same length for the given algorithm
         computed_list_of_scores = computed_list_of_scores[:len(score_run1)]
