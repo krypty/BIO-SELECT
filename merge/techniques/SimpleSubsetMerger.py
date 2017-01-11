@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
-from merge.SubsetMerger import SubsetMerger
+from merge.techniques.SubsetMerger import SubsetMerger
 
 
 class SimpleSubsetMerger(SubsetMerger):

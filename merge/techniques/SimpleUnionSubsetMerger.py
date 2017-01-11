@@ -1,4 +1,4 @@
-from merge.simple.SimpleSubsetMerger import SimpleSubsetMerger
+from merge.techniques.SimpleSubsetMerger import SimpleSubsetMerger
 
 
 class SimpleUnionSubsetMerger(SimpleSubsetMerger):
