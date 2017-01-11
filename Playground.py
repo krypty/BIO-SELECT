@@ -161,8 +161,116 @@ def main4():
     print(len(feat_ids))  # should be 1000
 
 
+def main5():
+    DELIMITER = ";"
+
+    def import_features():
+        # filename = r'/home/gary/Dropbox/Master/3emeSemestre/TM/code/outputs/features_lists_final/MILE_determinist2_features_by_rank.csv'
+        # filename = r'/home/gary/Dropbox/Master/3emeSemestre/TM/code/outputs/features_lists_final/mile_features_by_rank.csv'
+        # filename = r'/home/gary/Dropbox/Master/3emeSemestre/TM/code/outputs/features_lists_final/golub_19122016_features_by_rank.csv'
+        # filename = r'/home/gary/Dropbox/Master/3emeSemestre/TM/code/outputs/features_lists_final/golub_limma_features_by_rank.csv'
+        filename = r'/home/gary/Dropbox/Master/3emeSemestre/TM/code/outputs/features_lists_final/mile_limma_features_by_rank.csv'
+
+        list_of_features = {}
+        with open(filename, "rb") as csvfile:
+            for line in csvfile:
+                line_splited = line.split(DELIMITER)
+
+                # ignore the algorithm if it does not provide any list
+                if len(line_splited) <= 2:
+                    continue
+
+                alg_name, feats = line_splited[0], line_splited[1:]
+
+                feats = [(int(f[0]), float(f[1])) for f in [feat.split(",") for feat in feats]]
+                list_of_features[alg_name] = feats
+        return list_of_features
+
+    feats = import_features()
+    print(feats)
+
+    def print_converted_rank(alg_name, tuples):
+        indices, ranks = zip(*tuples)
+        ranks = map(lambda x: 1.0 / (1.0 + x), ranks)
+        tuples = zip(indices, ranks)
+
+        # print
+        line = alg_name + DELIMITER + DELIMITER.join(["%d,%.5f" % (f[0], f[1]) for f in tuples])
+        print(line)
+
+    print_converted_rank("Limma", feats["Limma"])
+    # print_converted_rank("F Value", feats["F Value"])
+    # print_converted_rank("Fisher Score", feats["Fisher Score"])
+    # print_converted_rank("MRMR", feats["MRMR"])
+
+
+def main6():
+    import numpy as np
+    from scipy.cluster.hierarchy import linkage
+    from matplotlib import pyplot as plt
+    from scipy.cluster.hierarchy import dendrogram
+
+    def get_mask_of_features(a, union):
+        return [u_i in a for u_i in union]
+
+    def fancy_dendrogram(*args, **kwargs):
+        max_d = kwargs.pop('max_d', None)
+        if max_d and 'color_threshold' not in kwargs:
+            kwargs['color_threshold'] = max_d
+
+        ddata = dendrogram(*args, **kwargs)
+
+        if not kwargs.get('no_plot', False):
+            for i, d, c in zip(ddata['icoord'], ddata['dcoord'], ddata['color_list']):
+                x = 0.5 * sum(i[1:3])
+                y = d[1]
+                plt.plot(x, y, 'o', c=c)
+                plt.annotate("%.3g" % y, (x, y), xytext=(0, -5),
+                             textcoords='offset points',
+                             va='top', ha='center')
+            if max_d:
+                plt.axhline(y=max_d, c='k')
+        return ddata
+
+    # 0 and (1 and 2) are quite similar
+    # 1 and 2 are identical
+    # 3 shares half of the features with (1 and 2)
+    # 4 is completely different
+    L = [[1673, 4376, 6040, 1881, 4643, 2334, 1828, 6224, 4081, 4846],
+         [929, 4376, 6224, 22, 4846, 2321, 2222, 4643, 2334, 1828],
+         [929, 4376, 6224, 22, 4846, 2321, 2222, 4643, 2334, 1828],
+         [3232, 3222, 3212, 3243, 2356, 2321, 2222, 4643, 2334, 1828],
+         [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]]
+
+    L_labels = ["List %d" % i for i in range(len(L))]
+    print(L_labels)
+
+    # warning: we lost the sorting with the union
+
+    u = list(reduce(lambda a, b: set(a).union(set(b)), L))
+    print(u, "len: ", len(u))
+
+    L_mask = [get_mask_of_features(f, u) for f in L]
+    L_mask = np.array(L_mask)
+    Z = linkage(L_mask, metric='rogerstanimoto')
+
+    # calculate full dendrogram
+    plt.figure(figsize=(12, 10))
+    plt.title('Hierarchical Clustering Dendrogram')
+    plt.xlabel('sample index')
+    plt.ylabel('distance')
+
+    fancy_dendrogram(
+        Z,
+        labels=L_labels,
+        leaf_rotation=90.,  # rotates the x axis labels,
+    )
+    plt.show()
+
+
 if __name__ == '__main__':
     # main()
     # main2()
     # main3()
-    main4()
+    # main4()
+    main6()
