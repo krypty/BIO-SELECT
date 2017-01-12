@@ -1,12 +1,12 @@
-from merge.techniques.SimpleSubsetMerger import SimpleSubsetMerger
+from merge.techniques.SubsetMerger import SubsetMerger
 
 
-class SimpleUnionSubsetMerger(SimpleSubsetMerger):
+class UnionSubsetMerger(SubsetMerger):
     def __init__(self, subsets):
-        super(SimpleUnionSubsetMerger, self).__init__(subsets)
+        super(UnionSubsetMerger, self).__init__(subsets)
 
     def merge(self):
-        super(SimpleUnionSubsetMerger, self).merge()
+        super(UnionSubsetMerger, self).merge()
 
         ensemble_set = set()
 
