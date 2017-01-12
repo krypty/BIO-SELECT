@@ -5,8 +5,8 @@ class UnionSubsetMerger(SubsetMerger):
     def __init__(self, subsets):
         super(UnionSubsetMerger, self).__init__(subsets)
 
-    def merge(self):
-        super(UnionSubsetMerger, self).merge()
+    def _merge(self):
+        super(UnionSubsetMerger, self)._merge()
 
         ensemble_set = set()
 
