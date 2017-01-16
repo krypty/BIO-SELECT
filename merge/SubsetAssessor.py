@@ -52,4 +52,4 @@ class SubsetAssessor:
         return scores
 
     def _run_classifier(self, clf, k):
-        return cross_val_score(clf, self._ds.get_X()[:, self._subset], self._ds.get_y(), cv=k, n_jobs=-1)
+        return cross_val_score(clf, self._ds.get_X_test()[:, self._subset], self._ds.get_y_test(), cv=k, n_jobs=-1)
