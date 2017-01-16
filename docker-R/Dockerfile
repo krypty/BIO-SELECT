@@ -1,4 +1,4 @@
-FROM r-base:3.3.1
+FROM r-base@sha256:287d8b76535622e3693ea799f2e8fc31f7845111954b14ac1ef406deb4e811b9
 
 # needed for biobase
 RUN apt-get update && apt-get install -y libssl-dev libxml2-dev libcurl4-gnutls-dev

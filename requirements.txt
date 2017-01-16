@@ -55,7 +55,7 @@ scipy==0.18.1
 simplegeneric==0.8.1
 singledispatch==3.4.0.3
 six==1.10.0
--e git+https://github.com/jundongl/scikit-feature.git@a568db2358d68f8d6c73b29996ae8b91c69fd7a1#egg=skfeature
+-e git+https://github.com/krypty/scikit-feature.git@a568db2358d68f8d6c73b29996ae8b91c69fd7a1#egg=skfeature
 sklearn==0.0
 terminado==0.6
 Theano==0.8.2

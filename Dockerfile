@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu@sha256:7a64bc9c8843b0a8c8b8a7e4715b7615e4e1b0d8ca3c7e7a76ec8250899c397a
 
 RUN apt-get update && apt-get install -y build-essential python-pip python-dev curl
 
