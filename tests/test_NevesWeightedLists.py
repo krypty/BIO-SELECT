@@ -5,7 +5,7 @@ import numpy as np
 class TestNevesWeightedLists:
     def test_paper_example1(self):
         """
-        This test is inspired from the example 1 of the paper "Ensemble combinaison rules" by Aitana Neves
+        This test is inspired from the example 1 of the paper "Ensemble combination rules" by Aitana Neves
         """
         Z = np.array([
             [0, 2, 0.25],
@@ -22,7 +22,7 @@ class TestNevesWeightedLists:
 
     def test_paper_example2(self):
         """
-        This test is inspired from the example 2 of the paper "Ensemble combinaison rules" by Aitana Neves
+        This test is inspired from the example 2 of the paper "Ensemble combination rules" by Aitana Neves
         """
         Z = np.array([
             [0, 2, 0.25],
