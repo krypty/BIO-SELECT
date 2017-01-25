@@ -25,6 +25,9 @@ class Dendrogram:
         )
         plt.show()
 
+    def get_Z(self):
+        return self._Z
+
     def _compute_masks(self):
         # Use the union of all the selected features in all the lists to create the mask.
         # Using the union allows us to reduce the size of the mask by ignoring the features that are not in any lists

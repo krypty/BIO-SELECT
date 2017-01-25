@@ -29,21 +29,14 @@ class MariglianoWeightedLists:
         z_weights = {}
 
         for i, z_i in enumerate(self._Z):
-            print(i, z_i)
             idx = self._L + i
             lc = z_i[0]  # type: Node
             rc = z_i[1]  # type: Node
             roots.append((Node(idx, lc, rc)))
             z_weights[idx] = z_i[2]
 
-        print(roots)
-
         root = self._find_max_node(roots)
-        print("root", root)
         tree = self._replace_children(root, roots)
-        print("tree", tree)
-
-        print("z weigths", z_weights)
 
         return tree, z_weights
 
