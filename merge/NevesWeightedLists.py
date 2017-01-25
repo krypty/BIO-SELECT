@@ -36,7 +36,7 @@ class NevesWeightedLists:
         W = np.zeros(L)
 
         # for each row in the linkage matrix
-        for i in range(L - 1):
+        for i in range(L):
             if Z[i, 0] < L and Z[i, 1] < L:
                 W[int(Z[i, 0])] = 0.5
                 W[int(Z[i, 1])] = 0.5
@@ -58,3 +58,11 @@ class NevesWeightedLists:
                 W[int(Z[idx1, 1])] *= (1 - rs)
 
         return W
+
+
+if __name__ == '__main__':
+    from tests.test_NevesWeightedLists import TestNevesWeightedLists
+
+    t = TestNevesWeightedLists()
+    t.test_paper_example1()
+    t.test_paper_example2()
