@@ -1,5 +1,8 @@
+import warnings
+
 import numpy as np
 from sklearn.ensemble import ExtraTreesClassifier
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import cross_val_score
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
@@ -37,12 +40,14 @@ class SubsetAssessor:
         return self._std
 
     def _assess(self):
+        # hide warnings when the classifier does not converge
+        warnings.filterwarnings("ignore", category=ConvergenceWarning)
         scores = []
 
         classifiers = [
-            KNeighborsClassifier(algorithm="ball_tree", n_neighbors=5, n_jobs=-1, metric="manhattan"),
-            MLPClassifier(solver="adam", alpha=1e-3, hidden_layer_sizes=(100, 50), activation="relu"),
-            ExtraTreesClassifier(n_jobs=-1, n_estimators=100)
+            KNeighborsClassifier(algorithm="ball_tree", n_neighbors=4, n_jobs=-1, metric="manhattan"),
+            MLPClassifier(hidden_layer_sizes=(20, 10), activation="relu"),
+            ExtraTreesClassifier(n_jobs=-1, n_estimators=10)
         ]
 
         # run the classifiers k times each and take the median of each
@@ -52,4 +57,5 @@ class SubsetAssessor:
         return scores
 
     def _run_classifier(self, clf, k):
-        return cross_val_score(clf, self._ds.get_X_test()[:, self._subset], self._ds.get_y_test(), cv=k, n_jobs=-1)
+        return cross_val_score(clf, self._ds.get_X_test()[:, self._subset], self._ds.get_y_test(), cv=k, n_jobs=-1,
+                               scoring="f1_weighted")
