@@ -51,7 +51,7 @@ class GAANNAlgorithm(Algorithm):
         super(GAANNAlgorithm, self).__init__(dataset, n, name="GA ANN")
 
         self.VERBOSE = verbose
-        self._ga = GA(dataset, pop_count=100, n_features_to_keep=n, n_generations=50, verbose=verbose)
+        self._ga = GA(dataset, pop_count=100, n_features_to_keep=n, n_generations=30, verbose=verbose)
         self._best_features, self._score = self._ga.run()
 
     def _get_best_features_by_score_unnormed(self):
@@ -159,7 +159,8 @@ class GA:
 
         clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(30, 10))
 
-        scores = cross_val_score(clf, self._dataset.get_X()[:, features], self._dataset.get_y(), cv=3, n_jobs=-1)
+        scores = cross_val_score(clf, self._dataset.get_X()[:, features], self._dataset.get_y(),
+                                 scoring="f1_weighted", cv=3, n_jobs=-1)
         score = np.median(scores)
         return features, score
 
