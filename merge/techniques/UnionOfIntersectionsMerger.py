@@ -26,7 +26,12 @@ class UnionOfIntersectionsMerger(SubsetMerger):
         s -> (s0,s1,...s[n-1]), (s1,s2,...,sn), ...
         source: http://stackoverflow.com/a/6822773
         """
-        it = iter(seq)
+
+        # create a copy of the sequence to add the first item
+        seq_copy = seq[:]
+        seq_copy.append(seq[0])
+
+        it = iter(seq_copy)
         result = tuple(islice(it, n))
         if len(result) == n:
             yield result
