@@ -4,6 +4,7 @@ from merge.techniques.SubsetMerger import SubsetMerger
 class TopNMerger(SubsetMerger):
     """
     The purpose of this merger is to keep the N best features among all the algorithms.
+    The best features are the ones that appear at most across all lists
     """
 
     def __init__(self, subsets, n):
