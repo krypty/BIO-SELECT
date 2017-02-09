@@ -1,5 +1,7 @@
+from __future__ import division
 from time import sleep
 
+from scipy.cluster.hierarchy import ClusterNode
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import f_classif
@@ -237,9 +239,9 @@ def main6():
     # 3 shares half of the features with (1 and 2)
     # 4 is completely different
     L = [[1673, 4376, 6040, 1881, 4643, 2334, 1828, 6224, 4081, 4846],
-         [929, 4376, 6224, 22, 4846, 2321, 2222, 4643, 2334, 1828],
-         [929, 4376, 6224, 22, 4846, 2321, 2222, 4643, 2334, 1828],
          [3232, 3222, 3212, 3243, 2356, 2321, 2222, 4643, 2334, 1828],
+         [929, 4376, 6224, 22, 4846, 2321, 2222, 4643, 2334, 1828],
+         [929, 4376, 6224, 22, 4846, 2321, 2222, 4643, 2334, 1828],
          [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]]
 
     L_labels = ["List %d" % i for i in range(len(L))]
@@ -252,7 +254,7 @@ def main6():
 
     L_mask = [get_mask_of_features(f, u) for f in L]
     L_mask = np.array(L_mask)
-    Z = linkage(L_mask, metric='rogerstanimoto')
+    Z = linkage(L_mask, metric='dice')
 
     # calculate full dendrogram
     plt.figure(figsize=(12, 10))
@@ -260,12 +262,128 @@ def main6():
     plt.xlabel('sample index')
     plt.ylabel('distance')
 
-    fancy_dendrogram(
+    # Z = [[0, 2, 0.2, 2],
+    #      [5, 1, 0.6, 3],
+    #      [6, 3, 0.8, 4],
+    #      [7, 4, 0.9, 10]]
+
+    # Z = [[0, 2, 0.1, 1],
+    #      [4, 3, 0.3, 1],
+    #      [1, 5, 0.4, 1],
+    #      [6, 7, 0.8, 1]]
+
+    Z = np.array(Z)
+
+    d = fancy_dendrogram(
         Z,
         labels=L_labels,
         leaf_rotation=90.,  # rotates the x axis labels,
     )
+
+    # print("iccord", d['icoord'])
+    # print("dcoord", d['dcoord'])
+    # print("ivl", d['ivl'])
+    # print("leaves", d['leaves'])
+
+    def do(node):
+        """
+
+        :type node: ClusterNode
+        """
+        if not node.is_leaf():
+            print("%s and %s" % (node.get_left().get_id(), node.get_right().get_id()))
+        else:
+            print("not a leaf")
+        return node
+
+    print(Z)
+
     plt.show()
+
+    # we must ignore the fourth column to match the expected matrix's shape for NevesWeightedLists
+    Z_fixed = Z[:, :-1]
+    print("Z fixed : ")
+    print(Z_fixed)
+    n_lists = len(L)
+    print("n lists", n_lists)
+
+    # from merge.NevesWeightedLists import NevesWeightedLists
+    # W = NevesWeightedLists.compute_weights(Z_fixed, n_lists)
+    # print(W)
+
+    from merge.MariglianoWeightedLists import MariglianoWeightedLists
+    mwl = MariglianoWeightedLists(Z, n_lists)
+    W = mwl.compute_weights()
+    print(W)
+
+
+def main7():
+    import numpy as np
+
+    L = 5
+    Z = [[0, 2, 0.1, 1],
+         [4, 3, 0.3, 1],
+         [1, 5, 0.4, 1],
+         [6, 7, 0.8, 1]]
+
+    Z = np.array(Z)
+    Z = Z[:, :-1]
+
+    # print(Z)
+
+    class Node:
+        def __init__(self, id, lc, rc):
+            self.id = id
+            self.lc = lc
+            self.rc = rc
+
+            self.is_leaf = self._is_node_leaf()
+
+        def _is_node_leaf(self):
+            return self.lc == 0 and self.rc == 0
+
+        def __repr__(self):
+            if self.is_leaf:
+                return "[%s]" % (self.id)
+            else:
+                return "[%s -> (%s, %s)]" % (self.id, self.lc, self.rc)
+
+    def find_max_node(roots):
+        return max(roots, key=lambda x: x.id)
+
+    def replace_children(node, roots):
+        if isinstance(node, float) and node not in [r.id for r in roots]:
+            return Node(node, 0, 0)
+
+        if isinstance(node, float) and node in [r.id for r in roots]:
+            id = node
+            r = [r for r in roots if r.id == id][0]
+            lc = r.lc
+            rc = r.rc
+            return Node(id, replace_children(lc, roots), replace_children(rc, roots))
+
+        if isinstance(node, Node):
+            node.lc = replace_children(node.lc, roots)
+            node.rc = replace_children(node.rc, roots)
+
+        return node
+
+    def build_tree(Z, L):
+        roots = []
+        for i, z_i in enumerate(Z):
+            print(i, z_i)
+            lc = z_i[0]
+            rc = z_i[1]
+            roots.append((Node(L + i, lc, rc)))
+
+        print(roots)
+
+        root = find_max_node(roots)
+        print("root", root)
+        tree = replace_children(root, roots)
+        print("tree", tree)
+
+    build_tree(Z, L)
 
 
 if __name__ == '__main__':
@@ -274,3 +392,4 @@ if __name__ == '__main__':
     # main3()
     # main4()
     main6()
+    # main7()
