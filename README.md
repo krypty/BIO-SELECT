@@ -1,12 +1,14 @@
 # BIOSELECT
 
-*Note: all the datasets are not provided in this repository since they are very heavy*
+*Note: all the datasets are not provided in this repository since they are very heavy*.
 
-## How to get it ?
+## Setup the project using Docker (recommended)
 
-### Using Docker (recommanded)
+### Requirements
+* You will need a GNU/Linux distribution with Docker support. Xubuntu 16.04 is recommended.
+* You need to have Docker installed
 
-**On GNU/Linux**
+
 ``` bash
 ./build-docker.sh
 ```
@@ -16,39 +18,64 @@ Then you can run Jupyter to work on the notebooks
 ./run-jupyter-docker.sh
 ```
 
-Or run a single one or all notebooks and get the results in **HTML in the output folder**
+To run the unit tests
 ``` bash
-./run-notebook-docker.sh <notebook_to_execute> <dataset>
-# Example : ./run-notebook-docker.sh pipeline.ipynb Golub
-# Datasets available : Golub, MILE or EGEOD22619. All datasets can be found in datasets/DatasetLoader.py
-
-# or you can run all of them (only if you have enough coffee...)
-./run-all-notebooks-docker.sh <dataset>
+./run-unit-tests.sh
 ```
 
-**On Windows**
+### Setup the project using Python virtualenv
 
-You must use [Docker for Windows](https://docs.docker.com/docker-for-windows/)
-```
-docker build -t bioselect .
-docker run -it -v $pwd\:/code -p 8888:8888 --rm bioselect
-```
+**Warning**: You will not be able to run Limma if you use this method.
 
-### Using a virtual environment
-The following instructions are made for Ubuntu-like systems.
+**Information**: You don't need to follow these instructions if you followed the Docker ones
 
-_Note: I assume you already have downloaded this project and the datasets_
+### Requirements
+* A GNU/Linux operating system, it is assumed that you use an Ubuntu-like distribution
+* Git
+* Python 2 and pip
 
-1. `sudo apt-get update && apt-get install python-pip python-dev git`
-2. `pip install --user virtualenvwrapper`
-3. In your `~/.bashrc` add the following lines:
+#### Get the project
 ``` bash
-export WORKON_HOME=~/.virtualenvs
-mkdir -p $WORKON_HOME
-source ~/.local/bin/virtualenvwrapper.sh
+git clone https://github.com/krypty/BIO-SELECT.git
+cd BIO-SELECT
+
+# If you don't have pip installed
+wget https://bootstrap.pypa.io/get-pip.py
+sudo python2 get-pip.py
 ```
-4. `mkvirtualenv --python=/usr/bin/python2 TM_py2`
-5. `workon TM_py2`
-6. `cd path/to/the/project`
-7. `pip install -r requirements.txt`
-8. `jupyter-notebook`
+
+#### Create and activate the virtual environment
+``` bash
+sudo pip install virtualenv
+virtualenv -p python2 bioselect
+source bioselect/bin/activate
+```
+
+#### Install the dependancies
+``` bash
+# Those packages need to be installed on the system because some librairies require them
+sudo apt-get update && sudo apt-get install build-essential python-dev
+
+# Install python dependencies
+pip install -r requirements.txt
+```
+
+#### Run a Jupyter notebook
+To see if everything has been installed correctly, start Jupyter and run a notebook:
+``` bash
+jupyter-notebook
+```
+
+Now open your web browser at `http://localhost:8888` and
+open a Juypter notebook like `DatasetVisualisation.ipynb` for instance.
+
+## Getting started
+The project is composed of Jupyter notebooks and Python classes.
+The notebooks shows the graphs and the general workflow of the project and use the Python classes
+in the background.
+
+The first notebook you might want to check out is the one called `features_selection.ipynb`.
+It contains the dataset loadings and executes the algorithms. To see what happens behind the scenes
+you should look at the `import` statements and what is going on in these classes.
+
+An other thing you can do to getting started is to review the unit tests. It can help you to understand how a class work
