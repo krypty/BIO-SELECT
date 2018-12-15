@@ -2,6 +2,10 @@
 
 *Note: all the datasets are not provided in this repository since they are very heavy*.
 
+## Master thesis presentation (Google Slides)
+
+You can find the presentation I have done (in French) [here](https://docs.google.com/presentation/d/1Cf2wGaCPGiQ0eqaUWuwIpMAMycqNcf5OZA9eYOQiFnc/edit?usp=sharing)
+
 ## Setup the project using Docker (recommended)
 
 ### Requirements
