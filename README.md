@@ -6,6 +6,10 @@
 
 You can find the presentation I have done (in French) [here](https://docs.google.com/presentation/d/1Cf2wGaCPGiQ0eqaUWuwIpMAMycqNcf5OZA9eYOQiFnc/edit?usp=sharing)
 
+## Master thesis report
+
+You can find the report I have done (in French) in the [report](/report/report.pdf) folder.
+
 ## Setup the project using Docker (recommended)
 
 ### Requirements
